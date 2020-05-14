@@ -99,7 +99,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR szCmdLine
 
 	typedef int (*Fn_onLoadVideoplayercomponentPtr)(wchar_t const *);
 	Fn_onLoadVideoplayercomponentPtr fn_onLoadVideoplayercomponentPtr = (Fn_onLoadVideoplayercomponentPtr)GetProcAddress(h_videoplayercomponent, "fn_onLoadVideoplayercomponent");
-	fn_onLoadVideoplayercomponentPtr(L"H:/videoplayercomponent/playerdemo/");
+	fn_onLoadVideoplayercomponentPtr(L"./");
 
 
 	typedef PlayerWindowInterface * (*Fn_CreatePlayWindowtPtr)();
@@ -107,7 +107,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR szCmdLine
 
 	PlayerWindowInterface * playwindow = fn_CreatePlayWindowtPtr();
 	playwindow->init(NULL,200,200,500,500);
-	playwindow->Play("H:/videoplayercomponent/playerdemo/out.mp4");
+	playwindow->Play("./out.mp4");
 
 	TCHAR		szAppName[] = TEXT("layerwindowTest");
 	WNDCLASSEX	wndClass;
