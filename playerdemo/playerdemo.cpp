@@ -88,7 +88,10 @@ void render(HWND hwnd)
 	ReleaseDC(hwnd, hdc);
 }
 
+
 LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
+
+PlayerWindowInterface * playwindow = NULL;
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR szCmdLine, int
 	nCmdShow)
 {
@@ -105,9 +108,9 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR szCmdLine
 	typedef PlayerWindowInterface * (*Fn_CreatePlayWindowtPtr)();
 	Fn_CreatePlayWindowtPtr fn_CreatePlayWindowtPtr = (Fn_CreatePlayWindowtPtr)GetProcAddress(h_videoplayercomponent, "fn_CreatePlayWindowt");
 
-	PlayerWindowInterface * playwindow = fn_CreatePlayWindowtPtr();
+	playwindow = fn_CreatePlayWindowtPtr();
 	playwindow->init(NULL,200,200,500,500);
-	playwindow->Play("./out.mp4");
+	playwindow->Play("./allin.mp4");
 
 	TCHAR		szAppName[] = TEXT("layerwindowTest");
 	WNDCLASSEX	wndClass;
@@ -136,6 +139,12 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR szCmdLine
 	ShowWindow(hwnd, SW_SHOW);
 	UpdateWindow(hwnd);
 	
+
+	PlayerWindowInterface * playwindow2 = fn_CreatePlayWindowtPtr();
+	playwindow2->init(hwnd,200,200,500,500);
+	playwindow2->Play("./out.mp4");
+
+
 	while (GetMessage(&msg, NULL, 0, 0))
 	{
 		TranslateMessage(&msg);
@@ -160,11 +169,15 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 	case WM_CREATE:
 		SetTimer(hwnd, IDT_TIMER, 200, (TIMERPROC)TimerProc);
 		break;
+	case WM_RBUTTONDOWN:
+		playwindow->Play("./out.mp4");
+		break;
 	case WM_LBUTTONDOWN:
 		ldown = TRUE;
 		SetCapture(hwnd);
 		TheFirstPoint.x = LOWORD(lParam);
 		TheFirstPoint.y = HIWORD(lParam);
+		playwindow->Play("./allin.mp4");
 		break;
 	case WM_LBUTTONUP:
 		ldown = FALSE;

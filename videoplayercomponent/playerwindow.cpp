@@ -62,7 +62,7 @@ void transformRGBhalf(uint8_t * in, uint8_t* out, int width, int height)
 
 void saveRGBAfiles(uint8_t* rgbadata, int width, int height)
 {
-	//return;
+	return;
 	static int filecout = 0;
 
 	int depth = 4;
@@ -108,8 +108,16 @@ void saveRGBAfiles(uint8_t* rgbadata, int width, int height)
 
 void PlayerWindow::releaseResources()
 {
-	if(hCompatibleDC != NULL)DeleteObject(hCompatibleDC);
-	if(hCustomBmp != NULL )DeleteObject(hCustomBmp);
+	if(hCompatibleDC != NULL)
+	{
+		DeleteObject(hCompatibleDC);
+		hCompatibleDC =NULL;
+	}
+	if(hCustomBmp != NULL )
+	{
+		DeleteObject(hCustomBmp); 
+		hCustomBmp = NULL;
+	}
 }
 
 void PlayerWindow::render(HWND hwnd, uint8_t * data, int WIDTH, int HEIGHT, bool rotate)
@@ -120,8 +128,8 @@ void PlayerWindow::render(HWND hwnd, uint8_t * data, int WIDTH, int HEIGHT, bool
 	{
 		hCompatibleDC = CreateCompatibleDC(NULL);
 		hCustomBmp = CreateCompatibleBitmap(hdc, WIDTH, HEIGHT); //创建一副与当前DC兼容的位图
-		SelectObject(hCompatibleDC, hCustomBmp);
 	}
+	SelectObject(hCompatibleDC, hCustomBmp);
 
 	BITMAPINFO bmpInfo;
 	bmpInfo.bmiHeader.biSize = sizeof(BITMAPINFOHEADER);
@@ -148,7 +156,10 @@ void PlayerWindow::render(HWND hwnd, uint8_t * data, int WIDTH, int HEIGHT, bool
 
 bool PlayerWindow::init(HWND parentHwnd, int x, int y, int w, int h)
 {
-
+	if(w <= 0 || h <= 0 )
+	{//非合法大小 不播放 
+		return false;
+	}
 	TCHAR		szAppName[] = TEXT("videoplayerwindow");
 	WNDCLASSEX	wndClass;
 	MSG			msg;
@@ -168,7 +179,7 @@ bool PlayerWindow::init(HWND parentHwnd, int x, int y, int w, int h)
 	RegisterClassEx(&wndClass);
 	m_hwnd = CreateWindowEx(WS_EX_LAYERED, TEXT("VideoPlayerWindow"), szAppName, WS_CLIPCHILDREN | WS_CLIPSIBLINGS | WS_POPUP/*无边框风格*/
 		, 300, 200, WIN_WIDTH, WIN_HEIGHT,
-		NULL, NULL, GetModuleHandle(NULL), NULL);
+		parentHwnd, NULL, GetModuleHandle(NULL), NULL);
 	//设置本窗口为分层窗口支持透明
 	//分层窗口没有WM_PAINT消息
 
@@ -183,11 +194,13 @@ void PlayerWindow::setPlayPosition(int x, int y, int w, int h)
 
 }
 
-int PlayerWindow::Play(const string & filePath)
+bool PlayerWindow::Play(const string & filePath)
 {
 
+	releaseResources();
+	stop();
 	//做上一次的清理工作。
-	
+	string errorStr;
 
 	m_playing = true;
 
@@ -196,12 +209,12 @@ int PlayerWindow::Play(const string & filePath)
 	pFormatCtx = FfmpegFunctions::getInstance()->avformat_alloc_contextPtr();
 
 	if(FfmpegFunctions::getInstance()->avformat_open_inputPtr(&pFormatCtx,m_filepath.c_str(),NULL,NULL)!=0){
-		//printf("Couldn't open input stream.\n");
-		return -1;
+		errorStr.append("Couldn't open input stream.");
+		return false;
 	}
 	if(FfmpegFunctions::getInstance()->avformat_find_stream_infoPtr(pFormatCtx,NULL)<0){
-		//printf("Couldn't find stream information.\n");
-		return -1;
+		errorStr.append("Couldn't find stream information..");
+		return false;
 	}
 	videoindex=-1;
 	for(int i=0; i<pFormatCtx->nb_streams; i++) 
@@ -210,19 +223,19 @@ int PlayerWindow::Play(const string & filePath)
 			break;
 		}
 		if(videoindex==-1){
-			//printf("Didn't find a video stream.\n");
-			return -1;
+			errorStr.append("Didn't find a video stream.");
+			return false;
 		}
 
 		pCodecCtx=pFormatCtx->streams[videoindex]->codec;
 		pCodec= FfmpegFunctions::getInstance()->avcodec_find_decoderPtr(pCodecCtx->codec_id);
 		if(pCodec==NULL){
-			//printf("Codec not found.\n");
-			return -1;
+			errorStr.append("Codec not found.");
+			return false;
 		}
 		if(FfmpegFunctions::getInstance()->avcodec_open2Ptr(pCodecCtx, pCodec,NULL)<0){
-			//printf("Could not open codec.\n");
-			return -1;
+			errorStr.append("Could not open codec.");
+			return false;
 		}
 
 		pFrame=FfmpegFunctions::getInstance()->av_frame_allocPtr();
@@ -265,7 +278,13 @@ int PlayerWindow::Play(const string & filePath)
 
 void PlayerWindow::stop()
 {
+	KillTimer(m_hwnd, IDT_REDNER_TIMER); // 停掉定时器
 
+	m_playing = false;
+	m_bReadFramesFinished = false;
+	m_bClearWin = false;
+	m_filepath = "";
+	releaseFFmpegResources();
 }
 
 int PlayerWindow::renderFrame()
@@ -281,7 +300,7 @@ int PlayerWindow::renderFrame()
 		bool needbreak = false;
 		while(FfmpegFunctions::getInstance()->av_read_framePtr(pFormatCtx, packet)>=0){
 			if(packet->stream_index==videoindex){
-				ret = FfmpegFunctions::getInstance()->avcodec_decode_video2Ptr(pCodecCtx, pFrame, &got_picture, packet);
+				int ret = FfmpegFunctions::getInstance()->avcodec_decode_video2Ptr(pCodecCtx, pFrame, &got_picture, packet);
 				if(ret < 0){
 					//printf("Decode Error.\n");
 					return -1;
@@ -317,74 +336,99 @@ int PlayerWindow::renderFrame()
 				}
 			}
 			FfmpegFunctions::getInstance()->av_free_packetPtr(packet);
+			//packet = NULL;
 			if(needbreak)
 			{
 				break;
 			}
-
-
-		}
+		} // end of while
 		if(!needbreak)
 		{ //while循环结束
 			m_bReadFramesFinished = true;
 		}
-
 	}//if m_bReadFramesFinished;
 
 
 
 	if(m_bReadFramesFinished)
 	{
-		bool isFinished = true;
-		while(FfmpegFunctions::getInstance()->avcodec_decode_video2Ptr(pCodecCtx, pFrame, &got_picture, packet) >= 0) {
-			if (!got_picture)
+		if(!m_bClearWin){
+			bool isLastFrame= true;
+			while(FfmpegFunctions::getInstance()->avcodec_decode_video2Ptr(pCodecCtx, pFrame, &got_picture, packet) >= 0) {
+				if (!got_picture)
+					break;
+				FfmpegFunctions::getInstance()->sws_scalePtr(img_convert_ctx, (const unsigned char* const*)pFrame->data, pFrame->linesize, 0, pCodecCtx->height, 
+					pFrameYUV->data, pFrameYUV->linesize);
+
+				int outWidth = pCodecCtx->width;
+				uint8_t *data[AV_NUM_DATA_POINTERS] = {0};
+				data[0] = (uint8_t *)out;
+				int linesize[AV_NUM_DATA_POINTERS] = { 0 };
+				linesize[0] = outWidth * 4;
+				int h = FfmpegFunctions::getInstance()->sws_scalePtr(m_pSwsContextYUV2BGRA, pFrameYUV->data, pFrameYUV->linesize, 0, pCodecCtx->height, data, linesize);
+				if (h > 0){
+					//printf("(%d)", h);
+				}
+
+				transformRGBhalf(out, outRGBA,pCodecCtx->width,pCodecCtx->height);
+				saveRGBAfiles(outRGBA,pCodecCtx->width/2,pCodecCtx->height);
+				render(hwnd, outRGBA, pCodecCtx->width/2,pCodecCtx->height ,true);
+
+
+				//saveRGBAfiles(out,pCodecCtx->width,pCodecCtx->height);
+				////transformRGBRotate(out, outRGBA,pCodecCtx->width,pCodecCtx->height);
+				////render(hwnd, outRGBA, pCodecCtx->width,pCodecCtx->height );
+				//render(hwnd, out, pCodecCtx->width,pCodecCtx->height );
+
+				isLastFrame = false;
 				break;
-			FfmpegFunctions::getInstance()->sws_scalePtr(img_convert_ctx, (const unsigned char* const*)pFrame->data, pFrame->linesize, 0, pCodecCtx->height, 
-				pFrameYUV->data, pFrameYUV->linesize);
-
-			int outWidth = pCodecCtx->width;
-			uint8_t *data[AV_NUM_DATA_POINTERS] = {0};
-			data[0] = (uint8_t *)out;
-			int linesize[AV_NUM_DATA_POINTERS] = { 0 };
-			linesize[0] = outWidth * 4;
-			int h = FfmpegFunctions::getInstance()->sws_scalePtr(m_pSwsContextYUV2BGRA, pFrameYUV->data, pFrameYUV->linesize, 0, pCodecCtx->height, data, linesize);
-			if (h > 0){
-				//printf("(%d)", h);
+			} // end of while
+			if(isLastFrame)
+			{
+				// 清空画布
+				m_bClearWin = true;
 			}
-
-
-			transformRGBhalf(out, outRGBA,pCodecCtx->width,pCodecCtx->height);
-			saveRGBAfiles(outRGBA,pCodecCtx->width/2,pCodecCtx->height);
+		}
+		else
+		{//播完后清空画布，防止最后一帧占屏
+			int size = pCodecCtx->width * pCodecCtx->height * 4 ;
+			memset(outRGBA,0,size); //初始化位图
 			render(hwnd, outRGBA, pCodecCtx->width/2,pCodecCtx->height ,true);
-
-
-			//saveRGBAfiles(out,pCodecCtx->width,pCodecCtx->height);
-			////transformRGBRotate(out, outRGBA,pCodecCtx->width,pCodecCtx->height);
-			////render(hwnd, outRGBA, pCodecCtx->width,pCodecCtx->height );
-			//render(hwnd, out, pCodecCtx->width,pCodecCtx->height );
-
-			isFinished = false;
-			break;
+			m_bClearWin = false;
+			m_playing = false;
+			KillTimer(m_hwnd, IDT_REDNER_TIMER); // 停掉定时器
+			releaseFFmpegResources(); // 清理资源
 		}
-		if(isFinished)
-		{
-			//结束播放
-			m_playing  = false;
-			
-		}
-
 	}
-
 	return 0;
 }
 
 PlayerWindow::PlayerWindow():m_bReadFramesFinished(false),m_playing(false)
+,m_bClearWin(false)
 ,ldown(false)
+,m_width(0)
+,m_height(0)
 {
 	hCompatibleDC = NULL;
 	hCustomBmp = NULL;
 	TheFirstPoint.x = 0;
 	TheFirstPoint.y = 0;
+
+
+	pFormatCtx = NULL;
+	videoindex = -1;
+	pCodecCtx = NULL;
+	pCodec = NULL;
+	pFrame = NULL;
+	pFrameYUV = NULL;
+	out_buffer = NULL;
+	packet = NULL;
+	img_convert_ctx = NULL;
+	m_filepath = "";
+	m_pSwsContextYUV2BGRA = NULL;
+
+	out = NULL;
+	outRGBA = NULL;
 
 }
 
@@ -418,7 +462,6 @@ LRESULT PlayerWindow::MyProc(HWND hwnd,UINT msg,WPARAM wParam,LPARAM lParam)
 		break;
 	case WM_LBUTTONDBLCLK:
 		DestroyWindow(hwnd);
-		releaseResources();
 	case WM_DESTROY:
 		PostQuitMessage(0);
 		break;
@@ -426,7 +469,62 @@ LRESULT PlayerWindow::MyProc(HWND hwnd,UINT msg,WPARAM wParam,LPARAM lParam)
 		renderFrame();
 	}
 	return DefWindowProc(hwnd, msg, wParam, lParam);
+}
 
+PlayerWindow::~PlayerWindow()
+{
+
+}
+
+void PlayerWindow::releaseFFmpegResources()
+{
+	if(out != NULL)
+	{
+		delete[] out;
+		out = NULL;
+	}
+	if(outRGBA != NULL)
+	{
+		delete[] outRGBA;
+		outRGBA = NULL;
+	}
+
+	if(m_pSwsContextYUV2BGRA != NULL)
+	{
+		FfmpegFunctions::getInstance()->sws_freeContextPtr(m_pSwsContextYUV2BGRA);
+		m_pSwsContextYUV2BGRA = NULL;
+	}
+	if(img_convert_ctx != NULL)
+	{
+		FfmpegFunctions::getInstance()->sws_freeContextPtr(img_convert_ctx);
+		img_convert_ctx = NULL;
+	}
+	if(pFrameYUV != NULL)
+	{
+		FfmpegFunctions::getInstance()->av_frame_freePtr(&pFrameYUV);
+		pFrameYUV = NULL;
+	}
+	if(pFrame != NULL)
+	{
+		FfmpegFunctions::getInstance()->av_frame_freePtr(&pFrame);
+		pFrame = NULL;
+	}
+	if(pCodecCtx != NULL)
+	{
+		FfmpegFunctions::getInstance()->avcodec_closePtr(pCodecCtx);
+		pCodecCtx = NULL;
+	}
+	if(pFormatCtx != NULL)
+	{
+		FfmpegFunctions::getInstance()->avformat_close_inputPtr(&pFormatCtx);
+		pFormatCtx = NULL;
+	}
+	//sws_freeContext(m_pSwsContextYUV2BGRA);
+	//sws_freeContext(img_convert_ctx);
+	//av_frame_free(&pFrameYUV);
+	//av_frame_free(&pFrame);
+	//avcodec_close(pCodecCtx);
+	//avformat_close_input(&pFormatCtx);
 }
 
 

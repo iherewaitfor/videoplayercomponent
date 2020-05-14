@@ -17,6 +17,7 @@ FfmpegFunctions::FfmpegFunctions(wstring filePath)
 	Avformat_find_stream_infoPtr avformat_find_stream_infoPtr = NULL;
 	Av_dump_formatPtr av_dump_formatPtr= NULL;
 	Av_read_framePtr av_read_framePtr= NULL;
+	Avformat_close_inputPtr avformat_close_inputPtr = NULL;
 
 
 	//LoadLibraryA("avcodec-55.dll");
@@ -26,6 +27,7 @@ FfmpegFunctions::FfmpegFunctions(wstring filePath)
 	Avcodec_open2Ptr avcodec_open2Ptr= NULL;
 	Avcodec_decode_video2Ptr avcodec_decode_video2Ptr = NULL;
 	Av_free_packetPtr av_free_packetPtr = NULL;
+	Avcodec_closePtr avcodec_closePtr =NULL;
 
 
 	//LoadLibraryA("avutil-52.dll");
@@ -34,11 +36,13 @@ FfmpegFunctions::FfmpegFunctions(wstring filePath)
 	Av_mallocPtr av_mallocPtr = NULL;
 	Av_image_get_buffer_sizePtr av_image_get_buffer_sizePtr = NULL;
 	Av_image_fill_arraysPtr av_image_fill_arraysPtr = NULL;
+	Av_frame_freePtr av_frame_freePtr = NULL;
 
 	//LoadLibraryA("swscale-2.dll");
 	//HMODULE h_swscale= GetModuleHandleA("swscale-2.dll");
 	Sws_getContextPtr sws_getContextPtr = NULL;
 	Sws_scalePtr sws_scalePtr = NULL;
+	Sws_freeContextPtr sws_freeContextPtr = NULL;
 }
 
 FfmpegFunctions * FfmpegFunctions::getInstance()
@@ -79,6 +83,9 @@ void FfmpegFunctions::initFns()
 
 	av_read_framePtr = (Av_read_framePtr)GetProcAddress(h_avformat, "av_read_frame");
 
+	avformat_close_inputPtr = (Avformat_close_inputPtr)GetProcAddress(h_avformat, "avformat_close_input");
+	
+
 
 	tempPath = m_filePath;
 	tempPath.append(L"avcodec-55.dll");
@@ -93,6 +100,7 @@ void FfmpegFunctions::initFns()
 
 	av_free_packetPtr = (Av_free_packetPtr)GetProcAddress(h_aavcodec, "av_free_packet");
 
+	avcodec_closePtr = (Avcodec_closePtr)GetProcAddress(h_aavcodec, "avcodec_close");
 
 	tempPath = m_filePath;
 	tempPath.append(L"avutil-52.dll");
@@ -101,12 +109,17 @@ void FfmpegFunctions::initFns()
 
 	av_frame_allocPtr = (Av_frame_allocPtr)GetProcAddress(h_avutil, "av_frame_alloc");
 
+	av_frame_freePtr = (Av_frame_freePtr)GetProcAddress(h_avutil, "av_frame_free");
+
 	av_mallocPtr = (Av_mallocPtr)GetProcAddress(h_avutil, "av_malloc");
 
 
 	av_image_get_buffer_sizePtr = (Av_image_get_buffer_sizePtr)GetProcAddress(h_avutil, "av_image_get_buffer_size");
 
 	av_image_fill_arraysPtr = (Av_image_fill_arraysPtr)GetProcAddress(h_avutil, "av_image_fill_arrays");
+
+
+
 
 	tempPath = m_filePath;
 	tempPath.append(L"swscale-2.dll");
@@ -116,6 +129,7 @@ void FfmpegFunctions::initFns()
 	sws_getContextPtr = (Sws_getContextPtr)GetProcAddress(h_swscale, "sws_getContext");
 
 	sws_scalePtr = (Sws_scalePtr)GetProcAddress(h_swscale, "sws_scale");
+	sws_freeContextPtr = (Sws_freeContextPtr)GetProcAddress(h_swscale, "sws_freeContext");
 }
 
 void FfmpegFunctions::createInstance(wstring filePath)
