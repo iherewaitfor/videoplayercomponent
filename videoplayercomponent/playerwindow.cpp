@@ -152,6 +152,19 @@ void PlayerWindow::render(HWND hwnd, uint8_t * data, int WIDTH, int HEIGHT, bool
 	ReleaseDC(hwnd, hdc);
 }
 
+int getFrameIntervalms(int num, int den)
+{
+	int intervalms = 50; //默认20帧/s
+	if(num > 0 && den > 0 && num > den)
+	{
+		int tMs = 1000 * den / num;
+		if(tMs < 200 && tMs > 20)
+		{//     5< pts< 50， 帧率不要太高或太低
+			intervalms = tMs;
+		}
+	}
+	return intervalms;
+}
 
 bool PlayerWindow::init(HWND parentHwnd, int x, int y, int w, int h)
 {
@@ -224,8 +237,6 @@ bool PlayerWindow::Play(const string & filePath)
 	//做上一次的清理工作。
 	string errorStr;
 
-	m_playing = true;
-
 	m_filepath = filePath;
 
 	pFormatCtx = FfmpegFunctions::getInstance()->avformat_alloc_contextPtr();
@@ -249,7 +260,7 @@ bool PlayerWindow::Play(const string & filePath)
 			return false;
 		}
 
-		pCodecCtx=pFormatCtx->streams[videoindex]->codec; //r_frame_rate，帧率
+		pCodecCtx=pFormatCtx->streams[videoindex]->codec; 
 		pCodec= FfmpegFunctions::getInstance()->avcodec_find_decoderPtr(pCodecCtx->codec_id);
 		if(pCodec==NULL){
 			errorStr.append("Codec not found.");
@@ -284,11 +295,15 @@ bool PlayerWindow::Play(const string & filePath)
 		outRGBA = new uint8_t[size];
 		memset(outRGBA,0,size); //初始化位图
 
-
+		//pFormatCtx->streams[videoindex]->r_frame_rate，帧率
+		int intervalms = getFrameIntervalms(pFormatCtx->streams[videoindex]->r_frame_rate.num, pFormatCtx->streams[videoindex]->r_frame_rate.den);
 		SetTimer(m_hwnd,             // handle to main window 
 			IDT_REDNER_TIMER,            // timer identifier 
-			50,                 // ms interval 
+			intervalms,                 // ms interval 
 			NULL);     // no timer callback 
+
+
+		m_playing = true;
 		return 0;
 }
 
