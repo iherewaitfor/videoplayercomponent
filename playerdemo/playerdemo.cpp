@@ -214,7 +214,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 			}
 			else
 			{
-				playwindow->setPlayPosition(200,300,300,300);
+				playwindow->setPlayPosition(200,300,800,800);
 			}
 		}
 		break;

@@ -28,6 +28,9 @@ typedef int (*Avformat_find_stream_infoPtr)(AVFormatContext *, AVDictionary **);
 typedef void (*Av_dump_formatPtr)(AVFormatContext *, int , const char *, int);
 typedef int (*Av_read_framePtr)(AVFormatContext *, AVPacket *);
 typedef void (*Avformat_close_inputPtr)(AVFormatContext **);
+typedef int (*Av_seek_framePtr)(AVFormatContext *, int , int64_t ,int );
+
+
 
 //LoadLibraryA("avcodec-55.dll");
 //HMODULE h_aavcodec = GetModuleHandleA("avcodec-55.dll");
@@ -61,6 +64,9 @@ typedef int(*Sws_scalePtr)(struct SwsContext *, const uint8_t *const [],
 
 typedef void(*Sws_freeContextPtr)(struct SwsContext *);
 
+
+
+
 struct FfmpegFunctions
 {
 
@@ -75,6 +81,7 @@ struct FfmpegFunctions
 	Av_dump_formatPtr av_dump_formatPtr;
 	Av_read_framePtr av_read_framePtr;
 	Avformat_close_inputPtr avformat_close_inputPtr;
+	Av_seek_framePtr av_seek_framePtr;
 
 
 	//LoadLibraryA("avcodec-55.dll");

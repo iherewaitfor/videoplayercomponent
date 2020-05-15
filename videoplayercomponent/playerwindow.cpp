@@ -106,7 +106,7 @@ void saveRGBAfiles(uint8_t* rgbadata, int width, int height)
 
 
 
-void PlayerWindow::releaseResources()
+void PlayerWindow::releaseWinRenderResources()
 {
 	if(hCompatibleDC != NULL)
 	{
@@ -216,7 +216,7 @@ void PlayerWindow::setPlayPosition(int x, int y, int w, int h)
 	{
 		m_width = w;
 		m_height = h;
-		releaseResources();
+		releaseWinRenderResources();
 		delete [] outRGBA;
 		outRGBA = NULL;
 		delete [] out;
@@ -231,8 +231,6 @@ void PlayerWindow::setPlayPosition(int x, int y, int w, int h)
 
 bool PlayerWindow::Play(const string & filePath)
 {
-
-	releaseResources();
 	stop();
 	//做上一次的清理工作。
 	string errorStr;
@@ -283,11 +281,11 @@ bool PlayerWindow::Play(const string & filePath)
 		FfmpegFunctions::getInstance()->av_dump_formatPtr(pFormatCtx,0,m_filepath.c_str(),0);
 		//printf("-------------------------------------------------\n");
 		img_convert_ctx = FfmpegFunctions::getInstance()->sws_getContextPtr(pCodecCtx->width, pCodecCtx->height, pCodecCtx->pix_fmt, 
-			pCodecCtx->width, pCodecCtx->height, AV_PIX_FMT_YUV420P, SWS_BICUBIC, NULL, NULL, NULL); 
+			pCodecCtx->width, pCodecCtx->height, AV_PIX_FMT_YUV420P, SWS_FAST_BILINEAR, NULL, NULL, NULL); 
 
 
 		m_pSwsContextYUV2BGRA = FfmpegFunctions::getInstance()->sws_getContextPtr(pCodecCtx->width, pCodecCtx->height, AV_PIX_FMT_YUV420P,
-			m_width * 2, m_height, AV_PIX_FMT_BGRA, SWS_BICUBIC,
+			m_width * 2, m_height, AV_PIX_FMT_BGRA, SWS_FAST_BILINEAR,
 			NULL, NULL, NULL);
 		int size = m_width * 2 * m_height * 4 ;
 		out = new uint8_t[size];
@@ -316,9 +314,8 @@ void PlayerWindow::stop()
 	m_playing = false;
 	m_bReadFramesFinished = false;
 	m_bClearWin = false;
-	m_filepath = "";
+	m_bLoop = false;
 	releaseFFmpegResources();
-	releaseResources();
 }
 
 int PlayerWindow::renderFrame()
@@ -346,7 +343,7 @@ int PlayerWindow::renderFrame()
 					if(!m_pSwsContextYUV2BGRA)
 					{
 						m_pSwsContextYUV2BGRA = FfmpegFunctions::getInstance()->sws_getContextPtr(pCodecCtx->width, pCodecCtx->height, AV_PIX_FMT_YUV420P,
-							m_width * 2, m_height, AV_PIX_FMT_BGRA, SWS_BICUBIC,
+							m_width * 2, m_height, AV_PIX_FMT_BGRA, SWS_FAST_BILINEAR,
 							NULL, NULL, NULL);
 					}
 					if(!out)
@@ -409,7 +406,7 @@ int PlayerWindow::renderFrame()
 					if(!m_pSwsContextYUV2BGRA)
 					{
 						m_pSwsContextYUV2BGRA = FfmpegFunctions::getInstance()->sws_getContextPtr(pCodecCtx->width, pCodecCtx->height, AV_PIX_FMT_YUV420P,
-							m_width * 2, m_height, AV_PIX_FMT_BGRA, SWS_BICUBIC,
+							m_width * 2, m_height, AV_PIX_FMT_BGRA, SWS_FAST_BILINEAR,
 							NULL, NULL, NULL);
 					}
 					if(!out)
@@ -449,17 +446,28 @@ int PlayerWindow::renderFrame()
 		}
 		else
 		{//播完后清空画布，防止最后一帧占屏
-			clearWin();
-			m_bClearWin = false;
-			m_playing = false;
-			KillTimer(m_hwnd, IDT_REDNER_TIMER); // 停掉定时器
-			releaseFFmpegResources(); // 清理资源
+			if(m_bLoop)
+			{ // 循环播放
+				FfmpegFunctions::getInstance()->av_seek_framePtr(pFormatCtx, videoindex, 0, AVSEEK_FLAG_BACKWARD);
+				m_bReadFramesFinished = false;
+			}
+			else
+			{
+				clearWin();
+				m_bClearWin = false;
+				m_playing = false;
+				KillTimer(m_hwnd, IDT_REDNER_TIMER); // 停掉定时器
+				releaseFFmpegResources(); // 清理资源
+			}
+
+			
 		}
 	}
 	return 0;
 }
 
 PlayerWindow::PlayerWindow():m_bReadFramesFinished(false),m_playing(false)
+,m_bLoop(false)
 ,m_bClearWin(false)
 ,ldown(false)
 ,m_width(0)
@@ -527,6 +535,7 @@ LRESULT PlayerWindow::MyProc(HWND hwnd,UINT msg,WPARAM wParam,LPARAM lParam)
 PlayerWindow::~PlayerWindow()
 {
 	stop();
+	releaseWinRenderResources();
 	if(m_hwnd)
 	{
 		DestroyWindow(m_hwnd);

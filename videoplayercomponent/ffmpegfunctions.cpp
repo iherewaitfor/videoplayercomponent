@@ -18,6 +18,7 @@ FfmpegFunctions::FfmpegFunctions(wstring filePath)
 	Av_dump_formatPtr av_dump_formatPtr= NULL;
 	Av_read_framePtr av_read_framePtr= NULL;
 	Avformat_close_inputPtr avformat_close_inputPtr = NULL;
+	av_seek_framePtr = NULL;
 
 
 	//LoadLibraryA("avcodec-55.dll");
@@ -84,6 +85,8 @@ void FfmpegFunctions::initFns()
 	av_read_framePtr = (Av_read_framePtr)GetProcAddress(h_avformat, "av_read_frame");
 
 	avformat_close_inputPtr = (Avformat_close_inputPtr)GetProcAddress(h_avformat, "avformat_close_input");
+
+	av_seek_framePtr = (Av_seek_framePtr)GetProcAddress(h_avformat, "av_seek_frame");
 	
 
 

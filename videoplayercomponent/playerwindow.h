@@ -32,7 +32,7 @@ public:
 private:
 	int renderFrame();
 	void render(HWND hwnd, uint8_t * data, int WIDTH, int HEIGHT, bool rotate = false);
-	void releaseResources();
+	void releaseWinRenderResources();
 	void releaseFFmpegResources();
 	void clearWin();
 public:
@@ -60,6 +60,7 @@ private:
 
 	int		m_width;
 	int		m_height;
+	bool    m_bLoop;
 
 	HWND	m_hwnd;
 	BOOL	ldown;
