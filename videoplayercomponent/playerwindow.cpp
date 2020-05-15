@@ -153,16 +153,18 @@ void PlayerWindow::render(HWND hwnd, uint8_t * data, int WIDTH, int HEIGHT, bool
 }
 
 
-
 bool PlayerWindow::init(HWND parentHwnd, int x, int y, int w, int h)
 {
+	if(m_hwnd)
+	{ //只初始化一次       
+		return true;
+	}
 	if(w <= 0 || h <= 0 )
 	{//非合法大小 不播放 
 		return false;
 	}
 	TCHAR		szAppName[] = TEXT("videoplayerwindow");
 	WNDCLASSEX	wndClass;
-	MSG			msg;
 	wndClass.cbSize = sizeof(WNDCLASSEX);
 	wndClass.cbClsExtra = 0;
 	wndClass.cbWndExtra = 0;
@@ -180,10 +182,11 @@ bool PlayerWindow::init(HWND parentHwnd, int x, int y, int w, int h)
 	m_hwnd = CreateWindowEx(WS_EX_LAYERED, TEXT("VideoPlayerWindow"), szAppName, WS_CLIPCHILDREN | WS_CLIPSIBLINGS | WS_POPUP/*无边框风格*/
 		, 300, 200, WIN_WIDTH, WIN_HEIGHT,
 		parentHwnd, NULL, GetModuleHandle(NULL), NULL);
+	SetWindowLong(m_hwnd, GWL_USERDATA, (long)this);
+	m_width = w;
+	m_height = h;
 	//设置本窗口为分层窗口支持透明
 	//分层窗口没有WM_PAINT消息
-
-	SetWindowLong(m_hwnd, GWL_USERDATA, (long)this);
 	ShowWindow(m_hwnd, SW_SHOWNOACTIVATE);
 	UpdateWindow(m_hwnd);
 	return true;
@@ -191,7 +194,26 @@ bool PlayerWindow::init(HWND parentHwnd, int x, int y, int w, int h)
 
 void PlayerWindow::setPlayPosition(int x, int y, int w, int h)
 {
-
+	if(w <= 0 || h <= 0)
+	{
+		return;
+	}
+	SetWindowPos(m_hwnd,NULL, x, y, w, h,SWP_NOACTIVATE);
+	if(m_width != w || m_height != h )
+	{
+		m_width = w;
+		m_height = h;
+		releaseResources();
+		delete [] outRGBA;
+		outRGBA = NULL;
+		delete [] out;
+		out = NULL;
+		if(m_pSwsContextYUV2BGRA)
+		{//清理缩放上下文
+			FfmpegFunctions::getInstance()->sws_freeContextPtr(m_pSwsContextYUV2BGRA);
+			m_pSwsContextYUV2BGRA = NULL;
+		}
+	}
 }
 
 bool PlayerWindow::Play(const string & filePath)
@@ -227,7 +249,7 @@ bool PlayerWindow::Play(const string & filePath)
 			return false;
 		}
 
-		pCodecCtx=pFormatCtx->streams[videoindex]->codec;
+		pCodecCtx=pFormatCtx->streams[videoindex]->codec; //r_frame_rate，帧率
 		pCodec= FfmpegFunctions::getInstance()->avcodec_find_decoderPtr(pCodecCtx->codec_id);
 		if(pCodec==NULL){
 			errorStr.append("Codec not found.");
@@ -253,21 +275,15 @@ bool PlayerWindow::Play(const string & filePath)
 			pCodecCtx->width, pCodecCtx->height, AV_PIX_FMT_YUV420P, SWS_BICUBIC, NULL, NULL, NULL); 
 
 
-
 		m_pSwsContextYUV2BGRA = FfmpegFunctions::getInstance()->sws_getContextPtr(pCodecCtx->width, pCodecCtx->height, AV_PIX_FMT_YUV420P,
-			pCodecCtx->width, pCodecCtx->height, AV_PIX_FMT_BGRA, SWS_BICUBIC,
+			m_width * 2, m_height, AV_PIX_FMT_BGRA, SWS_BICUBIC,
 			NULL, NULL, NULL);
-		out = NULL;
-		int size = pCodecCtx->width * pCodecCtx->height * 4 ;
+		int size = m_width * 2 * m_height * 4 ;
 		out = new uint8_t[size];
 		memset(out,0,size); //初始化位图
-
-		outRGBA = NULL;
 		outRGBA = new uint8_t[size];
 		memset(outRGBA,0,size); //初始化位图
 
-
-		SetWindowPos(m_hwnd, NULL, 300, 200, pCodecCtx->width/2, pCodecCtx->height, SWP_NOMOVE );
 
 		SetTimer(m_hwnd,             // handle to main window 
 			IDT_REDNER_TIMER,            // timer identifier 
@@ -279,6 +295,8 @@ bool PlayerWindow::Play(const string & filePath)
 void PlayerWindow::stop()
 {
 	KillTimer(m_hwnd, IDT_REDNER_TIMER); // 停掉定时器
+
+	clearWin();
 
 	m_playing = false;
 	m_bReadFramesFinished = false;
@@ -309,7 +327,20 @@ int PlayerWindow::renderFrame()
 				if(got_picture){
 					FfmpegFunctions::getInstance()->sws_scalePtr(img_convert_ctx, (const unsigned char* const*)pFrame->data, pFrame->linesize, 0, pCodecCtx->height, 
 						pFrameYUV->data, pFrameYUV->linesize);
-					int outWidth = pCodecCtx->width;
+
+					if(!m_pSwsContextYUV2BGRA)
+					{
+						m_pSwsContextYUV2BGRA = FfmpegFunctions::getInstance()->sws_getContextPtr(pCodecCtx->width, pCodecCtx->height, AV_PIX_FMT_YUV420P,
+							m_width * 2, m_height, AV_PIX_FMT_BGRA, SWS_BICUBIC,
+							NULL, NULL, NULL);
+					}
+					if(!out)
+					{
+						int size = m_width * 2 * m_height * 4;
+						out = new uint8_t[size];
+						outRGBA = new uint8_t[size];
+					}
+					int outWidth = m_width * 2;
 					uint8_t *data[AV_NUM_DATA_POINTERS] = {0};
 					data[0] = (uint8_t *)out;
 					int linesize[AV_NUM_DATA_POINTERS] = { 0 };
@@ -318,10 +349,9 @@ int PlayerWindow::renderFrame()
 					if (h > 0){
 						//printf("(%d)", h);
 					}
-
-					transformRGBhalf(out, outRGBA,pCodecCtx->width,pCodecCtx->height);
-					saveRGBAfiles(outRGBA,pCodecCtx->width/2,pCodecCtx->height);
-					render(hwnd, outRGBA, pCodecCtx->width/2,pCodecCtx->height,true);
+					transformRGBhalf(out, outRGBA,m_width * 2,m_height);
+					saveRGBAfiles(outRGBA,m_width,m_height);
+					render(hwnd, outRGBA, m_width,m_height,true);
 
 
 					//SetWindowPos(hwnd, NULL, 300, 200, pCodecCtx->width, pCodecCtx->height, SWP_SHOWWINDOW );
@@ -361,19 +391,31 @@ int PlayerWindow::renderFrame()
 				FfmpegFunctions::getInstance()->sws_scalePtr(img_convert_ctx, (const unsigned char* const*)pFrame->data, pFrame->linesize, 0, pCodecCtx->height, 
 					pFrameYUV->data, pFrameYUV->linesize);
 
-				int outWidth = pCodecCtx->width;
-				uint8_t *data[AV_NUM_DATA_POINTERS] = {0};
-				data[0] = (uint8_t *)out;
-				int linesize[AV_NUM_DATA_POINTERS] = { 0 };
-				linesize[0] = outWidth * 4;
-				int h = FfmpegFunctions::getInstance()->sws_scalePtr(m_pSwsContextYUV2BGRA, pFrameYUV->data, pFrameYUV->linesize, 0, pCodecCtx->height, data, linesize);
-				if (h > 0){
-					//printf("(%d)", h);
-				}
+					if(!m_pSwsContextYUV2BGRA)
+					{
+						m_pSwsContextYUV2BGRA = FfmpegFunctions::getInstance()->sws_getContextPtr(pCodecCtx->width, pCodecCtx->height, AV_PIX_FMT_YUV420P,
+							m_width * 2, m_height, AV_PIX_FMT_BGRA, SWS_BICUBIC,
+							NULL, NULL, NULL);
+					}
+					if(!out)
+					{
+						int size = m_width * 2 * m_height * 4;
+						out = new uint8_t[size];
+						outRGBA = new uint8_t[size];
+					}
+					int outWidth = m_width * 2;
+					uint8_t *data[AV_NUM_DATA_POINTERS] = {0};
+					data[0] = (uint8_t *)out;
+					int linesize[AV_NUM_DATA_POINTERS] = { 0 };
+					linesize[0] = outWidth * 4;
+					int h = FfmpegFunctions::getInstance()->sws_scalePtr(m_pSwsContextYUV2BGRA, pFrameYUV->data, pFrameYUV->linesize, 0, pCodecCtx->height, data, linesize);
+					if (h > 0){
+						//printf("(%d)", h);
+					}
 
-				transformRGBhalf(out, outRGBA,pCodecCtx->width,pCodecCtx->height);
-				saveRGBAfiles(outRGBA,pCodecCtx->width/2,pCodecCtx->height);
-				render(hwnd, outRGBA, pCodecCtx->width/2,pCodecCtx->height ,true);
+					transformRGBhalf(out, outRGBA,m_width * 2,m_height);
+					saveRGBAfiles(outRGBA,m_width,m_height);
+					render(hwnd, outRGBA, m_width,m_height,true);
 
 
 				//saveRGBAfiles(out,pCodecCtx->width,pCodecCtx->height);
@@ -392,9 +434,7 @@ int PlayerWindow::renderFrame()
 		}
 		else
 		{//播完后清空画布，防止最后一帧占屏
-			int size = pCodecCtx->width * pCodecCtx->height * 4 ;
-			memset(outRGBA,0,size); //初始化位图
-			render(hwnd, outRGBA, pCodecCtx->width/2,pCodecCtx->height ,true);
+			clearWin();
 			m_bClearWin = false;
 			m_playing = false;
 			KillTimer(m_hwnd, IDT_REDNER_TIMER); // 停掉定时器
@@ -409,6 +449,7 @@ PlayerWindow::PlayerWindow():m_bReadFramesFinished(false),m_playing(false)
 ,ldown(false)
 ,m_width(0)
 ,m_height(0)
+,m_hwnd(NULL)
 {
 	hCompatibleDC = NULL;
 	hCustomBmp = NULL;
@@ -527,6 +568,16 @@ void PlayerWindow::releaseFFmpegResources()
 	//av_frame_free(&pFrame);
 	//avcodec_close(pCodecCtx);
 	//avformat_close_input(&pFormatCtx);
+}
+
+void PlayerWindow::clearWin()
+{
+	if(m_hwnd && outRGBA)
+	{
+		int size = m_width *2 * m_height * 4 ;
+		memset(outRGBA,0,size); //初始化位图
+		render(m_hwnd, outRGBA, m_width, m_height ,true);
+	}
 }
 
 

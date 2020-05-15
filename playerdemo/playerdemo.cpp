@@ -150,7 +150,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR szCmdLine
 	
 
 	PlayerWindowInterface * playwindow2 = fn_CreatePlayWindowtPtr();
-	playwindow2->init(hwnd,200,200,500,500);
+	playwindow2->init(hwnd,200,200,912,720);
 	playwindow2->Play("./out.mp4");
 
 
@@ -182,9 +182,9 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 	case WM_RBUTTONDOWN:
 		if(playwindow)
 		{
-			//playwindow->stop();
-			fn_FreePlayWindowPtr(playwindow);
-			playwindow = NULL;
+			playwindow->stop();
+			//fn_FreePlayWindowPtr(playwindow);
+			//playwindow = NULL;
 		}
 		return 1;
 		break;
@@ -202,11 +202,19 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 		{
 			if(++playIndex%3 ==0)
 			{
+				playwindow->stop();
+				playwindow->setPlayPosition(200,300,912,720);
 				playwindow->Play("./out.mp4");
+			}
+			else if(playIndex%3 == 1)
+			{
+				playwindow->stop();
+				playwindow->setPlayPosition(200,300,500,500);
+				playwindow->Play("./allin.mp4");
 			}
 			else
 			{
-				playwindow->Play("./allin.mp4");
+				playwindow->setPlayPosition(200,300,300,300);
 			}
 		}
 		break;

@@ -34,6 +34,7 @@ private:
 	void render(HWND hwnd, uint8_t * data, int WIDTH, int HEIGHT, bool rotate = false);
 	void releaseResources();
 	void releaseFFmpegResources();
+	void clearWin();
 public:
 	LRESULT MyProc(HWND hWnd,UINT uMsg,WPARAM wParam,LPARAM lParam);//类成员函数,我们将会让这个类成员函数作为窗口的窗口过程
 
