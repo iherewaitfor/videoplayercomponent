@@ -285,6 +285,7 @@ void PlayerWindow::stop()
 	m_bClearWin = false;
 	m_filepath = "";
 	releaseFFmpegResources();
+	releaseResources();
 }
 
 int PlayerWindow::renderFrame()
@@ -460,20 +461,21 @@ LRESULT PlayerWindow::MyProc(HWND hwnd,UINT msg,WPARAM wParam,LPARAM lParam)
 				SWP_NOSIZE | SWP_NOZORDER);
 		}
 		break;
-	case WM_LBUTTONDBLCLK:
-		DestroyWindow(hwnd);
-	case WM_DESTROY:
-		PostQuitMessage(0);
-		break;
 	case WM_TIMER:
 		renderFrame();
+		break;
 	}
 	return DefWindowProc(hwnd, msg, wParam, lParam);
 }
 
 PlayerWindow::~PlayerWindow()
 {
-
+	stop();
+	if(m_hwnd)
+	{
+		DestroyWindow(m_hwnd);
+		m_hwnd = NULL;
+	}
 }
 
 void PlayerWindow::releaseFFmpegResources()

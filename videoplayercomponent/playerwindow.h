@@ -23,7 +23,7 @@ using namespace std;
 class PlayerWindow : public PlayerWindowInterface{
 public:
 	PlayerWindow();
-	~PlayerWindow();
+	virtual ~PlayerWindow();
 	bool init(HWND parentHwnd, int x, int y, int w, int h);
 	void setPlayPosition(int x, int y, int w, int h);
 	bool Play(const string & filePath);

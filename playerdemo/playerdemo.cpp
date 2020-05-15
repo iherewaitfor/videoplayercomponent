@@ -91,6 +91,16 @@ void render(HWND hwnd)
 
 LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
+
+typedef int (*Fn_onLoadVideoplayercomponentPtr)(wchar_t const *);
+Fn_onLoadVideoplayercomponentPtr fn_onLoadVideoplayercomponentPtr = NULL;
+
+typedef PlayerWindowInterface * (*Fn_CreatePlayWindowtPtr)();
+Fn_CreatePlayWindowtPtr fn_CreatePlayWindowtPtr = NULL;
+
+typedef PlayerWindowInterface * (*Fn_FreePlayWindowPtr)(PlayerWindowInterface *);
+Fn_FreePlayWindowPtr fn_FreePlayWindowPtr = NULL;
+
 PlayerWindowInterface * playwindow = NULL;
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR szCmdLine, int
 	nCmdShow)
@@ -100,13 +110,12 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR szCmdLine
 	HMODULE h_videoplayercomponent = GetModuleHandle(L"videoplayercomponent.dll");
 
 
-	typedef int (*Fn_onLoadVideoplayercomponentPtr)(wchar_t const *);
-	Fn_onLoadVideoplayercomponentPtr fn_onLoadVideoplayercomponentPtr = (Fn_onLoadVideoplayercomponentPtr)GetProcAddress(h_videoplayercomponent, "fn_onLoadVideoplayercomponent");
+	fn_onLoadVideoplayercomponentPtr = (Fn_onLoadVideoplayercomponentPtr)GetProcAddress(h_videoplayercomponent, "fn_onLoadVideoplayercomponent");
 	fn_onLoadVideoplayercomponentPtr(L"./");
 
 
-	typedef PlayerWindowInterface * (*Fn_CreatePlayWindowtPtr)();
-	Fn_CreatePlayWindowtPtr fn_CreatePlayWindowtPtr = (Fn_CreatePlayWindowtPtr)GetProcAddress(h_videoplayercomponent, "fn_CreatePlayWindowt");
+	fn_CreatePlayWindowtPtr = (Fn_CreatePlayWindowtPtr)GetProcAddress(h_videoplayercomponent, "fn_CreatePlayWindowt");
+	fn_FreePlayWindowPtr = (Fn_FreePlayWindowPtr)GetProcAddress(h_videoplayercomponent, "fn_FreePlayWindow");
 
 	playwindow = fn_CreatePlayWindowtPtr();
 	playwindow->init(NULL,200,200,500,500);
@@ -164,20 +173,42 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 	static BOOL		ldown;
 	static POINT	TheFirstPoint;
 
+	static int playIndex = 0;
 	switch (msg)
 	{
 	case WM_CREATE:
 		SetTimer(hwnd, IDT_TIMER, 200, (TIMERPROC)TimerProc);
 		break;
 	case WM_RBUTTONDOWN:
-		playwindow->Play("./out.mp4");
+		if(playwindow)
+		{
+			//playwindow->stop();
+			fn_FreePlayWindowPtr(playwindow);
+			playwindow = NULL;
+		}
+		return 1;
 		break;
 	case WM_LBUTTONDOWN:
 		ldown = TRUE;
 		SetCapture(hwnd);
 		TheFirstPoint.x = LOWORD(lParam);
 		TheFirstPoint.y = HIWORD(lParam);
-		playwindow->Play("./allin.mp4");
+		if(!playwindow)
+		{
+			playwindow = fn_CreatePlayWindowtPtr();
+			playwindow->init(hwnd,200,200,500,500);
+		}
+		if(playwindow)
+		{
+			if(++playIndex%3 ==0)
+			{
+				playwindow->Play("./out.mp4");
+			}
+			else
+			{
+				playwindow->Play("./allin.mp4");
+			}
+		}
 		break;
 	case WM_LBUTTONUP:
 		ldown = FALSE;

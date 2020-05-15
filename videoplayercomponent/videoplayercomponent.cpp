@@ -43,6 +43,14 @@ VIDEOPLAYERCOMPONENT_API PlayerWindowInterface * fn_CreatePlayWindowt()
 	return new PlayerWindow();
 }
 
+extern "C" VIDEOPLAYERCOMPONENT_API void fn_FreePlayWindow(PlayerWindowInterface * w)
+{
+	if(w)
+	{
+		delete(w);
+	}
+}
+
 // 这是已导出类的构造函数。
 // 有关类定义的信息，请参阅 videoplayercomponent.h
 Cvideoplayercomponent::Cvideoplayercomponent()
