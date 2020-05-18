@@ -321,7 +321,10 @@ void PlayerWindow::stop()
 	if(isPlaying)
 	{
 		map<string,string> extend;
-		PlayWindowHelperImple::getInstance()->sendEvent(playWindowId,VideoPlayerWindowComponent::PLAYERWINDOW_EVENTID_STOP,"end", extend);
+		if(PlayWindowHelperImple::getInstance())
+		{
+			PlayWindowHelperImple::getInstance()->sendEvent(playWindowId,VideoPlayerWindowComponent::PLAYERWINDOW_EVENTID_STOP,"end", extend);
+		}
 	}
 }
 
@@ -506,6 +509,10 @@ LRESULT PlayerWindow::MyProc(HWND hwnd,UINT msg,WPARAM wParam,LPARAM lParam)
 {
 	//static BOOL		ldown;
 	//static POINT	TheFirstPoint;
+	int x = 0;
+	int y = 0;
+	string str = "";
+
 	switch (msg)
 	{
 	case WM_LBUTTONDOWN:
@@ -517,6 +524,18 @@ LRESULT PlayerWindow::MyProc(HWND hwnd,UINT msg,WPARAM wParam,LPARAM lParam)
 	case WM_LBUTTONUP:
 		ldown = FALSE;
 		ReleaseCapture();
+
+		x = (int)LOWORD(lParam);//取低位
+		y = (int)HIWORD(lParam);//取高位
+		char buffer[256];
+		memset(buffer,0,256);
+		sprintf_s (buffer,256,"%d,%d",x,y);
+		str.append(buffer);
+		if(PlayWindowHelperImple::getInstance())
+		{
+			PlayWindowHelperImple::getInstance()->sendEvent(playWindowId,VideoPlayerWindowComponent::PLAYERWINDOW_EVENTID_CLICK,str, map<string,string>());
+		}
+
 		break;
 	case WM_MOUSEMOVE:
 		if (ldown)

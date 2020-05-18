@@ -16,7 +16,15 @@ struct PlayerWindowInterface
 };
 
 namespace VideoPlayerWindowComponent{
-	const int PLAYERWINDOW_EVENTID_STOP = 0;
+	const int PLAYERWINDOW_EVENTID_STOP = 1;  //结束播放
+	const int PLAYERWINDOW_EVENTID_CLICK = 2; //左键单击
+
+
+//PLAYERWINDOW_EVENTID_CLICK  
+//消息 各字段含义
+//msgStr:返回点击事件坐标x,y。比如"200,300"
+
+
 };
 
 struct IPlayerWindowEventHandler

@@ -132,12 +132,14 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR szCmdLine
 	IPlayerWindowEventHandlerImpl * eventhandler = new IPlayerWindowEventHandlerImpl();
 
 	fn_getVideoPlayerComponentHelperPtr = (Fn_getVideoPlayerComponentHelperPtr)GetProcAddress(h_videoplayercomponent, "fn_getVideoPlayerComponentHelper");
-	fn_getVideoPlayerComponentHelperPtr()->regPlayerWindowEvent(playwindow->getPlayerWindowID(),VideoPlayerWindowComponent::PLAYERWINDOW_EVENTID_STOP,eventhandler);
 
 
 	playwindow = fn_getVideoPlayerComponentHelperPtr()->createPlayWindow();
 	playwindow->init(NULL,200,200,500,500);
 	playwindow->Play("./allin.mp4");
+
+	fn_getVideoPlayerComponentHelperPtr()->regPlayerWindowEvent(playwindow->getPlayerWindowID(),VideoPlayerWindowComponent::PLAYERWINDOW_EVENTID_STOP,eventhandler);
+	fn_getVideoPlayerComponentHelperPtr()->regPlayerWindowEvent(playwindow->getPlayerWindowID(),VideoPlayerWindowComponent::PLAYERWINDOW_EVENTID_CLICK,eventhandler);
 
 
 
