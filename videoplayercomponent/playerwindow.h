@@ -26,6 +26,7 @@ public:
 	virtual ~PlayerWindow();
 	bool init(HWND parentHwnd, int x, int y, int w, int h);
 	void setPlayPosition(int x, int y, int w, int h);
+	void setVisible(bool isVisible);
 	bool Play(const string & filePath);
 	void stop();
 	int getPlayerWindowID();
