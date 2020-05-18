@@ -113,7 +113,7 @@ class IPlayerWindowEventHandlerImpl: public IPlayerWindowEventHandler
 		/*fn_getVideoPlayerComponentHelperPtr()->unregPlayerWindowEvent(1,1,this);*/
 		if(playwindow && playwindow->getPlayerWindowID() == playerWindowID && msgid == VideoPlayerWindowComponent::PLAYERWINDOW_EVENTID_STOP && playCount-- > 0)
 		{
-			playwindow->Play("./out.mp4");
+			playwindow->play("./out.mp4");
 		}
 	}
 };
@@ -136,7 +136,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR szCmdLine
 
 	playwindow = fn_getVideoPlayerComponentHelperPtr()->createPlayWindow();
 	playwindow->init(NULL,200,200,500,500);
-	playwindow->Play("./allin.mp4");
+	playwindow->play("./allin.mp4");
 
 	fn_getVideoPlayerComponentHelperPtr()->regPlayerWindowEvent(playwindow->getPlayerWindowID(),VideoPlayerWindowComponent::PLAYERWINDOW_EVENTID_STOP,eventhandler);
 	fn_getVideoPlayerComponentHelperPtr()->regPlayerWindowEvent(playwindow->getPlayerWindowID(),VideoPlayerWindowComponent::PLAYERWINDOW_EVENTID_CLICK,eventhandler);
@@ -174,7 +174,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR szCmdLine
 
 	PlayerWindowInterface * playwindow2 = fn_getVideoPlayerComponentHelperPtr()->createPlayWindow();
 	playwindow2->init(hwnd,200,200,912,720);
-	playwindow2->Play("./out.mp4");
+	playwindow2->play("./out.mp4");
 
 
 	while (GetMessage(&msg, NULL, 0, 0))
@@ -227,13 +227,13 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 			{
 				playwindow->stop();
 				playwindow->setPlayPosition(200,300,912,720);
-				playwindow->Play("./out.mp4");
+				playwindow->play("./out.mp4");
 			}
 			else if(playIndex%3 == 1)
 			{
 				playwindow->stop();
 				playwindow->setPlayPosition(200,300,500,500);
-				playwindow->Play("./allin.mp4");
+				playwindow->play("./allin.mp4");
 			}
 			else
 			{

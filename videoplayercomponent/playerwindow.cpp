@@ -230,7 +230,7 @@ void PlayerWindow::setPlayPosition(int x, int y, int w, int h)
 	}
 }
 
-bool PlayerWindow::Play(const string & filePath)
+bool PlayerWindow::play(const string & filePath)
 {
 	stop();
 	//做上一次的清理工作。
