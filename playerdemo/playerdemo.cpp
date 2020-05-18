@@ -89,19 +89,41 @@ void render(HWND hwnd)
 }
 
 
+
+
+
+
 LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
 
 typedef int (*Fn_onLoadVideoplayercomponentPtr)(wchar_t const *);
 Fn_onLoadVideoplayercomponentPtr fn_onLoadVideoplayercomponentPtr = NULL;
 
-typedef PlayerWindowInterface * (*Fn_CreatePlayWindowtPtr)();
-Fn_CreatePlayWindowtPtr fn_CreatePlayWindowtPtr = NULL;
+typedef PlayerWindowInterface * (*Fn_CreatePlayWindowPtr)();
+Fn_CreatePlayWindowPtr fn_CreatePlayWindowPtr = NULL;
 
 typedef PlayerWindowInterface * (*Fn_FreePlayWindowPtr)(PlayerWindowInterface *);
 Fn_FreePlayWindowPtr fn_FreePlayWindowPtr = NULL;
 
+typedef VideoPlayerComponentHelper * (*Fn_getVideoPlayerComponentHelperPtr)();
+Fn_getVideoPlayerComponentHelperPtr fn_getVideoPlayerComponentHelperPtr = NULL;
+
 PlayerWindowInterface * playwindow = NULL;
+
+
+int playCount = 2;
+class IPlayerWindowEventHandlerImpl: public IPlayerWindowEventHandler
+{
+	void playerWindowCallback(int playerWindowID, int msgid,const string & msgStr,const map<string,string> &extend)
+	{//²¥·Å½áÊø
+		/*fn_getVideoPlayerComponentHelperPtr()->unregPlayerWindowEvent(1,1,this);*/
+		if(playwindow && playwindow->getPlayerWindowID() == playerWindowID && msgid == VideoPlayerWindowComponent::PLAYERWINDOW_EVENTID_STOP && playCount-- > 0)
+		{
+			playwindow->Play("./out.mp4");
+		}
+	}
+};
+
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR szCmdLine, int
 	nCmdShow)
 {
@@ -114,12 +136,21 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR szCmdLine
 	fn_onLoadVideoplayercomponentPtr(L"./");
 
 
-	fn_CreatePlayWindowtPtr = (Fn_CreatePlayWindowtPtr)GetProcAddress(h_videoplayercomponent, "fn_CreatePlayWindowt");
+	fn_CreatePlayWindowPtr = (Fn_CreatePlayWindowPtr)GetProcAddress(h_videoplayercomponent, "fn_CreatePlayWindow");
 	fn_FreePlayWindowPtr = (Fn_FreePlayWindowPtr)GetProcAddress(h_videoplayercomponent, "fn_FreePlayWindow");
 
-	playwindow = fn_CreatePlayWindowtPtr();
+
+	fn_getVideoPlayerComponentHelperPtr = (Fn_getVideoPlayerComponentHelperPtr)GetProcAddress(h_videoplayercomponent, "fn_getVideoPlayerComponentHelper");
+
+
+	playwindow = fn_CreatePlayWindowPtr();
 	playwindow->init(NULL,200,200,500,500);
 	playwindow->Play("./allin.mp4");
+
+
+	IPlayerWindowEventHandlerImpl * eventhandler = new IPlayerWindowEventHandlerImpl();
+
+	fn_getVideoPlayerComponentHelperPtr()->regPlayerWindowEvent(playwindow->getPlayerWindowID(),VideoPlayerWindowComponent::PLAYERWINDOW_EVENTID_STOP,eventhandler);
 
 	TCHAR		szAppName[] = TEXT("layerwindowTest");
 	WNDCLASSEX	wndClass;
@@ -149,7 +180,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR szCmdLine
 	UpdateWindow(hwnd);
 	
 
-	PlayerWindowInterface * playwindow2 = fn_CreatePlayWindowtPtr();
+	PlayerWindowInterface * playwindow2 = fn_CreatePlayWindowPtr();
 	playwindow2->init(hwnd,200,200,912,720);
 	playwindow2->Play("./out.mp4");
 
@@ -195,7 +226,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 		TheFirstPoint.y = HIWORD(lParam);
 		if(!playwindow)
 		{
-			playwindow = fn_CreatePlayWindowtPtr();
+			playwindow = fn_CreatePlayWindowPtr();
 			playwindow->init(hwnd,200,200,500,500);
 		}
 		if(playwindow)

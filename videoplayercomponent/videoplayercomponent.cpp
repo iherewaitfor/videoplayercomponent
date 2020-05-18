@@ -6,6 +6,7 @@
 
 #include "ffmpegfunctions.h"
 #include "playerwindow.h"
+#include "playwindowhelper.h"
 
 
 // 这是导出变量的一个示例
@@ -26,6 +27,9 @@ VIDEOPLAYERCOMPONENT_API int fn_onLoadVideoplayercomponent(LPCWSTR filePath)
 	FfmpegFunctions::getInstance()->initFns();
 	FfmpegFunctions::getInstance()->av_register_allPtr();
 	FfmpegFunctions::getInstance()->avformat_network_initPtr();
+
+	PlayWindowHelperImple::createInstance();
+
 	
 	return 0;
 
@@ -36,9 +40,11 @@ VIDEOPLAYERCOMPONENT_API void fn_unLoadVideoplayercomponent()
 {
 	//清理dll
 
+	FfmpegFunctions::desctroyInstance();
+	PlayWindowHelperImple::desctroyInstance();
 }
 
-VIDEOPLAYERCOMPONENT_API PlayerWindowInterface * fn_CreatePlayWindowt()
+VIDEOPLAYERCOMPONENT_API PlayerWindowInterface * fn_CreatePlayWindow()
 {
 	return new PlayerWindow();
 }
@@ -49,6 +55,11 @@ extern "C" VIDEOPLAYERCOMPONENT_API void fn_FreePlayWindow(PlayerWindowInterface
 	{
 		delete(w);
 	}
+}
+
+extern "C" VIDEOPLAYERCOMPONENT_API VideoPlayerComponentHelper* fn_getVideoPlayerComponentHelper()
+{
+	return PlayWindowHelperImple::getInstance();
 }
 
 // 这是已导出类的构造函数。

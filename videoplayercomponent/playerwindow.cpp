@@ -1,6 +1,7 @@
 #include "stdafx.h"
 #include "playerwindow.h"
 #include "ffmpegfunctions.h"
+#include "playwindowhelper.h"
 #include <Windows.h>
 #include <WinUser.h>
 
@@ -307,6 +308,7 @@ bool PlayerWindow::Play(const string & filePath)
 
 void PlayerWindow::stop()
 {
+	bool isPlaying = m_playing;
 	KillTimer(m_hwnd, IDT_REDNER_TIMER); // 停掉定时器
 
 	clearWin();
@@ -316,6 +318,11 @@ void PlayerWindow::stop()
 	m_bClearWin = false;
 	m_bLoop = false;
 	releaseFFmpegResources();
+	if(isPlaying)
+	{
+		map<string,string> extend;
+		PlayWindowHelperImple::getInstance()->sendEvent(playWindowId,VideoPlayerWindowComponent::PLAYERWINDOW_EVENTID_STOP,"end", extend);
+	}
 }
 
 int PlayerWindow::renderFrame()
@@ -453,19 +460,14 @@ int PlayerWindow::renderFrame()
 			}
 			else
 			{
-				clearWin();
-				m_bClearWin = false;
-				m_playing = false;
-				KillTimer(m_hwnd, IDT_REDNER_TIMER); // 停掉定时器
-				releaseFFmpegResources(); // 清理资源
+				stop();
+				
 			}
-
-			
 		}
 	}
 	return 0;
 }
-
+static int idseed  = 1;
 PlayerWindow::PlayerWindow():m_bReadFramesFinished(false),m_playing(false)
 ,m_bLoop(false)
 ,m_bClearWin(false)
@@ -473,7 +475,9 @@ PlayerWindow::PlayerWindow():m_bReadFramesFinished(false),m_playing(false)
 ,m_width(0)
 ,m_height(0)
 ,m_hwnd(NULL)
+,playWindowId(idseed++)
 {
+
 	hCompatibleDC = NULL;
 	hCustomBmp = NULL;
 	TheFirstPoint.x = 0;
@@ -526,7 +530,10 @@ LRESULT PlayerWindow::MyProc(HWND hwnd,UINT msg,WPARAM wParam,LPARAM lParam)
 		}
 		break;
 	case WM_TIMER:
-		renderFrame();
+		if(wParam == IDT_REDNER_TIMER)
+		{
+			renderFrame();
+		}
 		break;
 	}
 	return DefWindowProc(hwnd, msg, wParam, lParam);
@@ -602,6 +609,11 @@ void PlayerWindow::clearWin()
 		memset(outRGBA,0,size); //初始化位图
 		render(m_hwnd, outRGBA, m_width, m_height ,true);
 	}
+}
+
+int PlayerWindow::getPlayerWindowID()
+{
+	return playWindowId;
 }
 
 

@@ -26,7 +26,9 @@ VIDEOPLAYERCOMPONENT_API int fnvideoplayercomponent(void);
 
 extern "C" VIDEOPLAYERCOMPONENT_API int fn_onLoadVideoplayercomponent(LPCWSTR filePath);
 
-extern "C" VIDEOPLAYERCOMPONENT_API PlayerWindowInterface * fn_CreatePlayWindowt();
+extern "C" VIDEOPLAYERCOMPONENT_API PlayerWindowInterface * fn_CreatePlayWindow();
 extern "C" VIDEOPLAYERCOMPONENT_API void fn_FreePlayWindow(PlayerWindowInterface * w);
+
+extern "C" VIDEOPLAYERCOMPONENT_API VideoPlayerComponentHelper* fn_getVideoPlayerComponentHelper();
 
 VIDEOPLAYERCOMPONENT_API void fn_unLoadVideoplayercomponent();

@@ -202,6 +202,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\playwindowhelper.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\stdafx.cpp"
 				>
 				<FileConfiguration
@@ -237,6 +241,10 @@
 			</File>
 			<File
 				RelativePath=".\playerwindow.h"
+				>
+			</File>
+			<File
+				RelativePath=".\playwindowhelper.h"
 				>
 			</File>
 			<File

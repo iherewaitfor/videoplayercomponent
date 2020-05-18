@@ -28,6 +28,7 @@ public:
 	void setPlayPosition(int x, int y, int w, int h);
 	bool Play(const string & filePath);
 	void stop();
+	int getPlayerWindowID();
 
 private:
 	int renderFrame();
@@ -73,6 +74,8 @@ private:
 
 	HDC hCompatibleDC;
 	HBITMAP hCustomBmp;
+
+	int playWindowId;
 };
 
 
