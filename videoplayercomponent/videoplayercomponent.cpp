@@ -44,19 +44,6 @@ VIDEOPLAYERCOMPONENT_API void fn_unLoadVideoplayercomponent()
 	PlayWindowHelperImple::desctroyInstance();
 }
 
-VIDEOPLAYERCOMPONENT_API PlayerWindowInterface * fn_CreatePlayWindow()
-{
-	return new PlayerWindow();
-}
-
-extern "C" VIDEOPLAYERCOMPONENT_API void fn_FreePlayWindow(PlayerWindowInterface * w)
-{
-	if(w)
-	{
-		delete(w);
-	}
-}
-
 extern "C" VIDEOPLAYERCOMPONENT_API VideoPlayerComponentHelper* fn_getVideoPlayerComponentHelper()
 {
 	return PlayWindowHelperImple::getInstance();

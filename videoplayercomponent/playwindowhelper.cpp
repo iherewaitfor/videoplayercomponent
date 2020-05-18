@@ -1,5 +1,6 @@
 #include "stdafx.h"
 #include "playwindowhelper.h"
+#include "playerwindow.h"
 
 PlayWindowHelperImple* g_pPlayWindowHelperImple = NULL;
 
@@ -78,4 +79,17 @@ PlayWindowHelperImple * PlayWindowHelperImple::getInstance()
 PlayWindowHelperImple::~PlayWindowHelperImple()
 {
 	mapMsgHandler.clear();
+}
+
+PlayerWindowInterface * PlayWindowHelperImple::createPlayWindow()
+{
+	return new PlayerWindow();
+}
+
+void PlayWindowHelperImple::freePlayWindow(PlayerWindowInterface * w)
+{
+	if(w)
+	{
+		delete(w);
+	}
 }

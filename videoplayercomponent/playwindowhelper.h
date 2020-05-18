@@ -46,6 +46,8 @@ struct PlayWindowProtocolId
 class PlayWindowHelperImple: public VideoPlayerComponentHelper
 {
 public:
+	PlayerWindowInterface * createPlayWindow();
+	void freePlayWindow(PlayerWindowInterface * w);
 	void regPlayerWindowEvent(int playerWindowID, int msgid, IPlayerWindowEventHandler*eventHandler);
 	void unregPlayerWindowEvent(int playerWindowID, int msgid,IPlayerWindowEventHandler* eventHandler);
 

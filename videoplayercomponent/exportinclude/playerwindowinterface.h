@@ -26,6 +26,9 @@ struct IPlayerWindowEventHandler
 
 struct VideoPlayerComponentHelper
 {
+	virtual PlayerWindowInterface * createPlayWindow() = 0;
+	virtual void freePlayWindow(PlayerWindowInterface * w) = 0;
+
 	virtual void regPlayerWindowEvent(int playerWindowID, int msgid, IPlayerWindowEventHandler*) = 0;
 	virtual void unregPlayerWindowEvent(int playerWindowID, int msgid, IPlayerWindowEventHandler* eventHandler) = 0;
 };
