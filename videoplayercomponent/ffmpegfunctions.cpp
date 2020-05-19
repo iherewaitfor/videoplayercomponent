@@ -62,10 +62,14 @@ void FfmpegFunctions::desctroyInstance()
 
 void FfmpegFunctions::initFns()
 {
+	wchar_t szCurDir[MAX_PATH] = { 0 };
+	GetCurrentDirectory(MAX_PATH, szCurDir);
+	SetCurrentDirectory(m_filePath.c_str());
+
 	wstring tempPath = m_filePath;
 	tempPath.append(L"avformat-55.dll");
-	::LoadLibrary(tempPath.c_str());
-	HMODULE h_avformat = GetModuleHandleA("avformat-55.dll");
+	HMODULE h_avformat = ::LoadLibrary(tempPath.c_str());
+
 	av_register_allPtr = (Av_register_allPtr)GetProcAddress(h_avformat, "av_register_all");
 
 	avformat_network_initPtr = (Avformat_network_initPtr)GetProcAddress(h_avformat, "avformat_network_init");
@@ -92,8 +96,7 @@ void FfmpegFunctions::initFns()
 
 	tempPath = m_filePath;
 	tempPath.append(L"avcodec-55.dll");
-	::LoadLibrary(tempPath.c_str());
-	HMODULE h_aavcodec = GetModuleHandleA("avcodec-55.dll");
+	HMODULE h_aavcodec = ::LoadLibrary(tempPath.c_str());
 
 	avcodec_find_decoderPtr = (Avcodec_find_decoderPtr)GetProcAddress(h_aavcodec, "avcodec_find_decoder");
 
@@ -107,8 +110,7 @@ void FfmpegFunctions::initFns()
 
 	tempPath = m_filePath;
 	tempPath.append(L"avutil-52.dll");
-	::LoadLibrary(tempPath.c_str());
-	HMODULE h_avutil= GetModuleHandleA("avutil-52.dll");
+	HMODULE h_avutil= ::LoadLibrary(tempPath.c_str());
 
 	av_frame_allocPtr = (Av_frame_allocPtr)GetProcAddress(h_avutil, "av_frame_alloc");
 
@@ -126,13 +128,14 @@ void FfmpegFunctions::initFns()
 
 	tempPath = m_filePath;
 	tempPath.append(L"swscale-2.dll");
-	::LoadLibrary(tempPath.c_str());
-	HMODULE h_swscale= GetModuleHandleA("swscale-2.dll");
+	HMODULE h_swscale= ::LoadLibrary(tempPath.c_str());
 
 	sws_getContextPtr = (Sws_getContextPtr)GetProcAddress(h_swscale, "sws_getContext");
 
 	sws_scalePtr = (Sws_scalePtr)GetProcAddress(h_swscale, "sws_scale");
 	sws_freeContextPtr = (Sws_freeContextPtr)GetProcAddress(h_swscale, "sws_freeContext");
+
+	SetCurrentDirectory(szCurDir);
 }
 
 void FfmpegFunctions::createInstance(wstring filePath)

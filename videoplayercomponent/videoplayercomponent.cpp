@@ -26,7 +26,10 @@ VIDEOPLAYERCOMPONENT_API int fn_onLoadVideoplayercomponent(LPCWSTR filePath)
 	FfmpegFunctions::createInstance(filePath);
 	FfmpegFunctions::getInstance()->initFns();
 	FfmpegFunctions::getInstance()->av_register_allPtr();
-	FfmpegFunctions::getInstance()->avformat_network_initPtr();
+	if(FfmpegFunctions::getInstance()->avformat_network_initPtr)
+	{
+		FfmpegFunctions::getInstance()->avformat_network_initPtr();
+	}
 
 	PlayWindowHelperImple::createInstance();
 
