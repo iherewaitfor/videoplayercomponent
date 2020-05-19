@@ -640,6 +640,11 @@ void PlayerWindow::setVisible(bool isVisible)
 	::ShowWindow(m_hwnd, isVisible?SW_SHOWNOACTIVATE:SW_HIDE);
 }
 
+void PlayerWindow::setPlayerWindowID(int id)
+{
+	playWindowId = id;
+}
+
 
 LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {

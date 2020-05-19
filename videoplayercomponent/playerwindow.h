@@ -30,6 +30,7 @@ public:
 	bool play(const string & filePath);
 	void stop();
 	int getPlayerWindowID();
+	void setPlayerWindowID(int id);
 
 private:
 	int renderFrame();
