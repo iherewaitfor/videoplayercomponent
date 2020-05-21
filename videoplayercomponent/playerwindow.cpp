@@ -170,7 +170,8 @@ int getFrameIntervalms(int num, int den)
 bool PlayerWindow::init(HWND parentHwnd, int x, int y, int w, int h)
 {
 	if(m_hwnd)
-	{ //只初始化一次       
+	{ //只初始化一次
+	    setPlayPosition( x, y, w, h);
 		return true;
 	}
 	if(w <= 0 || h <= 0 )
@@ -196,6 +197,7 @@ bool PlayerWindow::init(HWND parentHwnd, int x, int y, int w, int h)
 	m_hwnd = CreateWindowEx(WS_EX_LAYERED, TEXT("VideoPlayerWindow"), szAppName, WS_CLIPCHILDREN | WS_CLIPSIBLINGS | WS_POPUP/*无边框风格*/
 		, 300, 200, WIN_WIDTH, WIN_HEIGHT,
 		parentHwnd, NULL, GetModuleHandle(NULL), NULL);
+	setTransparent(m_bTransparent);// 设置键鼠穿透
 	SetWindowLong(m_hwnd, GWL_USERDATA, (long)this);
 	m_width = w;
 	m_height = h;
@@ -479,6 +481,7 @@ PlayerWindow::PlayerWindow():m_bReadFramesFinished(false),m_playing(false)
 ,m_height(0)
 ,m_hwnd(NULL)
 ,playWindowId(idseed++)
+,m_bTransparent(true)
 {
 
 	hCompatibleDC = NULL;
@@ -516,14 +519,14 @@ LRESULT PlayerWindow::MyProc(HWND hwnd,UINT msg,WPARAM wParam,LPARAM lParam)
 	switch (msg)
 	{
 	case WM_LBUTTONDOWN:
-		ldown = TRUE;
-		SetCapture(hwnd);
-		TheFirstPoint.x = LOWORD(lParam);
-		TheFirstPoint.y = HIWORD(lParam);
+		//ldown = TRUE;
+		//SetCapture(hwnd);
+		//TheFirstPoint.x = LOWORD(lParam);
+		//TheFirstPoint.y = HIWORD(lParam);
 		break;
 	case WM_LBUTTONUP:
-		ldown = FALSE;
-		ReleaseCapture();
+		//ldown = FALSE;
+		//ReleaseCapture();
 
 		x = (int)LOWORD(lParam);//取低位
 		y = (int)HIWORD(lParam);//取高位
@@ -537,16 +540,16 @@ LRESULT PlayerWindow::MyProc(HWND hwnd,UINT msg,WPARAM wParam,LPARAM lParam)
 		}
 
 		break;
-	case WM_MOUSEMOVE:
-		if (ldown)
-		{
-			POINT	pt;
-			GetCursorPos(&pt);
-			pt.x -= TheFirstPoint.x;
-			pt.y -= TheFirstPoint.y;
-			SetWindowPos(hwnd, NULL, pt.x, pt.y, NULL, NULL, SWP_NOREDRAW |
-				SWP_NOSIZE | SWP_NOZORDER);
-		}
+	//case WM_MOUSEMOVE:
+	//	if (ldown)
+	//	{
+	//		POINT	pt;
+	//		GetCursorPos(&pt);
+	//		pt.x -= TheFirstPoint.x;
+	//		pt.y -= TheFirstPoint.y;
+	//		SetWindowPos(hwnd, NULL, pt.x, pt.y, NULL, NULL, SWP_NOREDRAW |
+	//			SWP_NOSIZE | SWP_NOZORDER);
+	//	}
 		break;
 	case WM_TIMER:
 		if(wParam == IDT_REDNER_TIMER)
@@ -643,6 +646,22 @@ void PlayerWindow::setVisible(bool isVisible)
 void PlayerWindow::setPlayerWindowID(int id)
 {
 	playWindowId = id;
+}
+
+void PlayerWindow::setTransparent(bool isTransparent)
+{
+	m_bTransparent = isTransparent;
+	if(m_hwnd)
+	{
+		if(m_bTransparent)
+		{
+			SetWindowLong(m_hwnd, GWL_EXSTYLE, (GetWindowLong(m_hwnd, GWL_EXSTYLE) | WS_EX_TRANSPARENT) );
+		}
+		else
+		{
+			SetWindowLong(m_hwnd, GWL_EXSTYLE, (GetWindowLong(m_hwnd, GWL_EXSTYLE) &(~WS_EX_TRANSPARENT)) );
+		}
+	}
 }
 
 

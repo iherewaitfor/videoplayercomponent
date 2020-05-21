@@ -31,6 +31,7 @@ public:
 	void stop();
 	int getPlayerWindowID();
 	void setPlayerWindowID(int id);
+	void setTransparent(bool isTransparent);
 
 private:
 	int renderFrame();
@@ -78,6 +79,7 @@ private:
 	HBITMAP hCustomBmp;
 
 	int playWindowId;
+	bool m_bTransparent;
 };
 
 
