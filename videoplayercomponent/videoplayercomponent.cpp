@@ -18,33 +18,37 @@ VIDEOPLAYERCOMPONENT_API int fnvideoplayercomponent(void)
 	return 42;
 }
 
-VIDEOPLAYERCOMPONENT_API int fn_onLoadVideoplayercomponent(LPCWSTR filePath)
+VIDEOPLAYERCOMPONENT_API bool fn_onLoadVideoplayercomponent(LPCWSTR filePath)
 {
 	//初始化dll
 	wstring temPath;
 	temPath.append(filePath);
 	FfmpegFunctions::createInstance(filePath);
-	FfmpegFunctions::getInstance()->initFns();
-	FfmpegFunctions::getInstance()->av_register_allPtr();
-	if(FfmpegFunctions::getInstance()->avformat_network_initPtr)
+	if(FfmpegFunctions::getInstance()->initFns())
 	{
-		FfmpegFunctions::getInstance()->avformat_network_initPtr();
+		if(FfmpegFunctions::getInstance()->av_register_allPtr)
+		{
+			FfmpegFunctions::getInstance()->av_register_allPtr();
+		}
+		if(FfmpegFunctions::getInstance()->avformat_network_initPtr)
+		{
+			FfmpegFunctions::getInstance()->avformat_network_initPtr();
+		}
+
+		PlayWindowHelperImple::createInstance();
+		return true;
 	}
-
-	PlayWindowHelperImple::createInstance();
-
-	
-	return 0;
+	return false;
 
 }
 
 
-VIDEOPLAYERCOMPONENT_API void fn_unLoadVideoplayercomponent()
+extern "C" VIDEOPLAYERCOMPONENT_API void fn_unLoadVideoplayercomponent()
 {
 	//清理dll
-
 	FfmpegFunctions::desctroyInstance();
 	PlayWindowHelperImple::desctroyInstance();
+	
 }
 
 extern "C" VIDEOPLAYERCOMPONENT_API VideoPlayerComponentHelper* fn_getVideoPlayerComponentHelper()

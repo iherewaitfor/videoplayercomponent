@@ -109,10 +109,11 @@ struct FfmpegFunctions
 	Sws_freeContextPtr sws_freeContextPtr;
 
 	FfmpegFunctions(wstring filePath);
+	~FfmpegFunctions();
 	static FfmpegFunctions * getInstance();
 	static void createInstance(wstring filePath);
 	static void desctroyInstance();
-	void initFns();
+	bool initFns();
 	wstring m_filePath;
 
 

@@ -60,7 +60,7 @@ void FfmpegFunctions::desctroyInstance()
 	}
 }
 
-void FfmpegFunctions::initFns()
+bool FfmpegFunctions::initFns()
 {
 	wchar_t szCurDir[MAX_PATH] = { 0 };
 	GetCurrentDirectory(MAX_PATH, szCurDir);
@@ -136,6 +136,12 @@ void FfmpegFunctions::initFns()
 	sws_freeContextPtr = (Sws_freeContextPtr)GetProcAddress(h_swscale, "sws_freeContext");
 
 	SetCurrentDirectory(szCurDir);
+
+	if(!h_avutil || !h_swscale || !h_aavcodec || !h_avformat)
+	{
+		return false;
+	}
+	return true;
 }
 
 void FfmpegFunctions::createInstance(wstring filePath)
@@ -144,5 +150,32 @@ void FfmpegFunctions::createInstance(wstring filePath)
 	if(pFfmpegFunctions == NULL)
 	{
 		pFfmpegFunctions = new FfmpegFunctions(filePath);
+	}
+}
+
+FfmpegFunctions::~FfmpegFunctions()
+{
+	HMODULE h_avformat = ::GetModuleHandle (L"avformat-55.dll");
+	if(h_avformat)
+	{
+		FreeLibrary(h_avformat);
+	}
+
+	HMODULE h_aavcodec = ::GetModuleHandle (L"avcodec-55.dll");
+	if(h_aavcodec)
+	{
+		FreeLibrary(h_aavcodec);
+	}
+
+	HMODULE h_swscale = ::GetModuleHandle (L"swscale-2.dll");
+	if(h_swscale)
+	{
+		FreeLibrary(h_swscale);
+	}
+
+	HMODULE h_avutil = ::GetModuleHandle (L"avutil-52.dll");
+	if(h_avutil)
+	{
+		FreeLibrary(h_avutil);
 	}
 }

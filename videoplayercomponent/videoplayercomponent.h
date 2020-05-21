@@ -24,8 +24,8 @@ extern VIDEOPLAYERCOMPONENT_API int nvideoplayercomponent;
 VIDEOPLAYERCOMPONENT_API int fnvideoplayercomponent(void);
 
 
-extern "C" VIDEOPLAYERCOMPONENT_API int fn_onLoadVideoplayercomponent(LPCWSTR filePath);
+extern "C" VIDEOPLAYERCOMPONENT_API bool fn_onLoadVideoplayercomponent(LPCWSTR filePath);
 
 extern "C" VIDEOPLAYERCOMPONENT_API VideoPlayerComponentHelper* fn_getVideoPlayerComponentHelper();
 
-VIDEOPLAYERCOMPONENT_API void fn_unLoadVideoplayercomponent();
+extern "C" VIDEOPLAYERCOMPONENT_API void fn_unLoadVideoplayercomponent();

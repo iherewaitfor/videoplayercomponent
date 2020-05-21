@@ -99,6 +99,9 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
 typedef int (*Fn_onLoadVideoplayercomponentPtr)(wchar_t const *);
 Fn_onLoadVideoplayercomponentPtr fn_onLoadVideoplayercomponentPtr = NULL;
 
+typedef int (*Fn_unLoadVideoplayercomponentPtr)();
+Fn_unLoadVideoplayercomponentPtr fn_unLoadVideoplayercomponentPtr = NULL;
+
 typedef VideoPlayerComponentHelper * (*Fn_getVideoPlayerComponentHelperPtr)();
 Fn_getVideoPlayerComponentHelperPtr fn_getVideoPlayerComponentHelperPtr = NULL;
 
@@ -118,26 +121,41 @@ class IPlayerWindowEventHandlerImpl: public IPlayerWindowEventHandler
 	}
 };
 
+void loadVideoComponent()
+{
+	HMODULE h_videoplayercomponent = GetModuleHandle(L"videoplayercomponent.dll");
+	if(!h_videoplayercomponent)
+	{
+		h_videoplayercomponent = LoadLibrary(L"videoplayercomponent.dll");
+	}
+	fn_onLoadVideoplayercomponentPtr = (Fn_onLoadVideoplayercomponentPtr)GetProcAddress(h_videoplayercomponent, "fn_onLoadVideoplayercomponent");
+	fn_onLoadVideoplayercomponentPtr(L"./");
+	fn_unLoadVideoplayercomponentPtr = (Fn_unLoadVideoplayercomponentPtr)GetProcAddress(h_videoplayercomponent, "fn_unLoadVideoplayercomponent");
+	fn_getVideoPlayerComponentHelperPtr = (Fn_getVideoPlayerComponentHelperPtr)GetProcAddress(h_videoplayercomponent, "fn_getVideoPlayerComponentHelper");
+}
+
+void unloaVideoComponent()
+{
+	if(fn_unLoadVideoplayercomponentPtr)
+	{
+		fn_unLoadVideoplayercomponentPtr();
+		fn_unLoadVideoplayercomponentPtr = NULL;
+		fn_onLoadVideoplayercomponentPtr = NULL;
+		fn_getVideoPlayerComponentHelperPtr = NULL;
+	}
+}
+
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR szCmdLine, int
 	nCmdShow)
 {
-
-	LoadLibrary(L"videoplayercomponent.dll");
-	HMODULE h_videoplayercomponent = GetModuleHandle(L"videoplayercomponent.dll");
-
-
-	fn_onLoadVideoplayercomponentPtr = (Fn_onLoadVideoplayercomponentPtr)GetProcAddress(h_videoplayercomponent, "fn_onLoadVideoplayercomponent");
-	fn_onLoadVideoplayercomponentPtr(L"./");
-
-	IPlayerWindowEventHandlerImpl * eventhandler = new IPlayerWindowEventHandlerImpl();
-
-	fn_getVideoPlayerComponentHelperPtr = (Fn_getVideoPlayerComponentHelperPtr)GetProcAddress(h_videoplayercomponent, "fn_getVideoPlayerComponentHelper");
-
-
+	loadVideoComponent();
 	playwindow = fn_getVideoPlayerComponentHelperPtr()->createPlayWindow();
 	playwindow->init(NULL,200,200,500,500);
 	playwindow->play("./allin.mp4");
+	playwindow->setTransparent(false);
 
+
+	IPlayerWindowEventHandlerImpl * eventhandler = new IPlayerWindowEventHandlerImpl();
 	fn_getVideoPlayerComponentHelperPtr()->regPlayerWindowEvent(playwindow->getPlayerWindowID(),VideoPlayerWindowComponent::PLAYERWINDOW_EVENTID_STOP,eventhandler);
 	fn_getVideoPlayerComponentHelperPtr()->regPlayerWindowEvent(playwindow->getPlayerWindowID(),VideoPlayerWindowComponent::PLAYERWINDOW_EVENTID_CLICK,eventhandler);
 
@@ -208,6 +226,9 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 			playwindow->stop();
 			fn_getVideoPlayerComponentHelperPtr()->freePlayWindow(playwindow);
 			playwindow = NULL;
+
+			//Ð¶ÔØ²âÊÔ
+			unloaVideoComponent();
 		}
 		return 1;
 		break;
@@ -216,6 +237,10 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 		SetCapture(hwnd);
 		TheFirstPoint.x = LOWORD(lParam);
 		TheFirstPoint.y = HIWORD(lParam);
+		if(!fn_getVideoPlayerComponentHelperPtr)
+		{
+			loadVideoComponent();
+		}
 		if(!playwindow)
 		{
 			playwindow = fn_getVideoPlayerComponentHelperPtr()->createPlayWindow();
