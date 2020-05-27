@@ -29,12 +29,14 @@ FfmpegFunctions::FfmpegFunctions(wstring filePath)
 	Avcodec_decode_video2Ptr avcodec_decode_video2Ptr = NULL;
 	Av_free_packetPtr av_free_packetPtr = NULL;
 	Avcodec_closePtr avcodec_closePtr =NULL;
+	Av_packet_unrefPtr av_packet_unrefPtr = NULL;
 
 
 	//LoadLibraryA("avutil-52.dll");
 	//HMODULE h_avutil= GetModuleHandleA("avutil-52.dll");
 	Av_frame_allocPtr av_frame_allocPtr = NULL;
 	Av_mallocPtr av_mallocPtr = NULL;
+	Av_freePtr av_freePtr = NULL;
 	Av_image_get_buffer_sizePtr av_image_get_buffer_sizePtr = NULL;
 	Av_image_fill_arraysPtr av_image_fill_arraysPtr = NULL;
 	Av_frame_freePtr av_frame_freePtr = NULL;
@@ -108,6 +110,8 @@ bool FfmpegFunctions::initFns()
 
 	avcodec_closePtr = (Avcodec_closePtr)GetProcAddress(h_aavcodec, "avcodec_close");
 
+	av_packet_unrefPtr = (Av_packet_unrefPtr)GetProcAddress(h_aavcodec, "av_packet_unref"); 
+
 	tempPath = m_filePath;
 	tempPath.append(L"avutil-52.dll");
 	HMODULE h_avutil= ::LoadLibrary(tempPath.c_str());
@@ -117,6 +121,9 @@ bool FfmpegFunctions::initFns()
 	av_frame_freePtr = (Av_frame_freePtr)GetProcAddress(h_avutil, "av_frame_free");
 
 	av_mallocPtr = (Av_mallocPtr)GetProcAddress(h_avutil, "av_malloc");
+
+	av_freePtr = (Av_freePtr)GetProcAddress(h_avutil, "av_free");
+	
 
 
 	av_image_get_buffer_sizePtr = (Av_image_get_buffer_sizePtr)GetProcAddress(h_avutil, "av_image_get_buffer_size");

@@ -40,15 +40,18 @@ typedef int (*Avcodec_open2Ptr)(AVCodecContext *, const AVCodec *, AVDictionary 
 typedef int (*Avcodec_decode_video2Ptr)(AVCodecContext *, AVFrame *, int *, const AVPacket *);
 typedef void (*Av_free_packetPtr)(AVPacket *);
 typedef int (*Avcodec_closePtr)(AVCodecContext *);
+typedef void (*Av_packet_unrefPtr)(AVPacket *);
 
 //LoadLibraryA("avutil-52.dll");
 //HMODULE h_avutil= GetModuleHandleA("avutil-52.dll");
 
 typedef AVFrame * (*Av_frame_allocPtr)();
 typedef unsigned char * (*Av_mallocPtr)(size_t);
+typedef void(*Av_freePtr)(void *);
 typedef int (*Av_image_get_buffer_sizePtr)(enum AVPixelFormat , int , int , int );
 typedef int (*Av_image_fill_arraysPtr)(uint8_t *[], int[],const uint8_t *,enum AVPixelFormat , int , int , int );
 typedef void (*Av_frame_freePtr)(AVFrame **);
+
 
 //LoadLibraryA("swscale-2.dll");
 //HMODULE h_swscale= GetModuleHandleA("swscale-2.dll");
@@ -92,12 +95,14 @@ struct FfmpegFunctions
 	Avcodec_decode_video2Ptr avcodec_decode_video2Ptr;
 	Av_free_packetPtr av_free_packetPtr;
 	Avcodec_closePtr avcodec_closePtr;
+	Av_packet_unrefPtr av_packet_unrefPtr;
 
 
 	//LoadLibraryA("avutil-52.dll");
 	//HMODULE h_avutil= GetModuleHandleA("avutil-52.dll");
 	Av_frame_allocPtr av_frame_allocPtr;
 	Av_mallocPtr av_mallocPtr;
+	Av_freePtr av_freePtr;
 	Av_image_get_buffer_sizePtr av_image_get_buffer_sizePtr;
 	Av_image_fill_arraysPtr av_image_fill_arraysPtr;
 	Av_frame_freePtr av_frame_freePtr;

@@ -390,8 +390,8 @@ int PlayerWindow::renderFrame()
 
 				}
 			}
+			FfmpegFunctions::getInstance()->av_packet_unrefPtr(packet);
 			FfmpegFunctions::getInstance()->av_free_packetPtr(packet);
-			//packet = NULL;
 			if(needbreak)
 			{
 				break;
@@ -455,6 +455,9 @@ int PlayerWindow::renderFrame()
 				// 清空画布
 				m_bClearWin = true;
 			}
+
+			FfmpegFunctions::getInstance()->av_packet_unrefPtr(packet);
+			FfmpegFunctions::getInstance()->av_free_packetPtr(packet);
 		}
 		else
 		{//播完后清空画布，防止最后一帧占屏
@@ -585,6 +588,19 @@ void PlayerWindow::releaseFFmpegResources()
 		outRGBA = NULL;
 	}
 
+	if(packet)
+	{
+		FfmpegFunctions::getInstance()->av_packet_unrefPtr(packet);
+		FfmpegFunctions::getInstance()->av_free_packetPtr(packet);
+		FfmpegFunctions::getInstance()->av_freePtr(packet);
+		packet = NULL;
+	}
+
+	if(out_buffer)
+	{
+		FfmpegFunctions::getInstance()->av_freePtr(out_buffer);
+		out_buffer = NULL;
+	}
 	if(m_pSwsContextYUV2BGRA != NULL)
 	{
 		FfmpegFunctions::getInstance()->sws_freeContextPtr(m_pSwsContextYUV2BGRA);
