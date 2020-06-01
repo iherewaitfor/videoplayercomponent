@@ -10,42 +10,42 @@ FfmpegFunctions::FfmpegFunctions(wstring filePath)
 	//::LoadLibraryA("avformat-55.dll");
 	//HMODULE h_avformat = GetModuleHandleA("avformat-55.dll");
 
-	Av_register_allPtr av_register_allPtr = NULL;
-	Avformat_network_initPtr avformat_network_initPtr = NULL;
-	Avformat_alloc_contextPtr avformat_alloc_contextPtr = NULL;
-	Avformat_open_inputPtr avformat_open_inputPtr = NULL;
-	Avformat_find_stream_infoPtr avformat_find_stream_infoPtr = NULL;
-	Av_dump_formatPtr av_dump_formatPtr= NULL;
-	Av_read_framePtr av_read_framePtr= NULL;
-	Avformat_close_inputPtr avformat_close_inputPtr = NULL;
+	av_register_allPtr = NULL;
+	avformat_network_initPtr = NULL;
+	avformat_alloc_contextPtr = NULL;
+	avformat_open_inputPtr = NULL;
+	avformat_find_stream_infoPtr = NULL;
+	av_dump_formatPtr= NULL;
+	av_read_framePtr= NULL;
+	avformat_close_inputPtr = NULL;
 	av_seek_framePtr = NULL;
 
 
 	//LoadLibraryA("avcodec-55.dll");
 	//HMODULE h_aavcodec = GetModuleHandleA("avcodec-55.dll");
 
-	Avcodec_find_decoderPtr avcodec_find_decoderPtr= NULL;
-	Avcodec_open2Ptr avcodec_open2Ptr= NULL;
-	Avcodec_decode_video2Ptr avcodec_decode_video2Ptr = NULL;
-	Av_free_packetPtr av_free_packetPtr = NULL;
-	Avcodec_closePtr avcodec_closePtr =NULL;
-	Av_packet_unrefPtr av_packet_unrefPtr = NULL;
+	avcodec_find_decoderPtr= NULL;
+	avcodec_open2Ptr= NULL;
+	avcodec_decode_video2Ptr = NULL;
+	av_free_packetPtr = NULL;
+	avcodec_closePtr =NULL;
+	av_packet_unrefPtr = NULL;
 
 
 	//LoadLibraryA("avutil-52.dll");
 	//HMODULE h_avutil= GetModuleHandleA("avutil-52.dll");
-	Av_frame_allocPtr av_frame_allocPtr = NULL;
-	Av_mallocPtr av_mallocPtr = NULL;
-	Av_freePtr av_freePtr = NULL;
-	Av_image_get_buffer_sizePtr av_image_get_buffer_sizePtr = NULL;
-	Av_image_fill_arraysPtr av_image_fill_arraysPtr = NULL;
-	Av_frame_freePtr av_frame_freePtr = NULL;
+	av_frame_allocPtr = NULL;
+	av_mallocPtr = NULL;
+	av_freePtr = NULL;
+	av_image_get_buffer_sizePtr = NULL;
+	av_image_fill_arraysPtr = NULL;
+	av_frame_freePtr = NULL;
 
 	//LoadLibraryA("swscale-2.dll");
 	//HMODULE h_swscale= GetModuleHandleA("swscale-2.dll");
-	Sws_getContextPtr sws_getContextPtr = NULL;
-	Sws_scalePtr sws_scalePtr = NULL;
-	Sws_freeContextPtr sws_freeContextPtr = NULL;
+	sws_getContextPtr = NULL;
+	sws_scalePtr = NULL;
+	sws_freeContextPtr = NULL;
 }
 
 FfmpegFunctions * FfmpegFunctions::getInstance()

@@ -250,13 +250,11 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 		{
 			if(++playIndex%3 ==0)
 			{
-				playwindow->stop();
 				playwindow->setPlayPosition(200,300,912,720);
 				playwindow->play("./out.mp4");
 			}
 			else if(playIndex%3 == 1)
 			{
-				playwindow->stop();
 				playwindow->setPlayPosition(200,300,500,500);
 				playwindow->play("./allin.mp4");
 			}
