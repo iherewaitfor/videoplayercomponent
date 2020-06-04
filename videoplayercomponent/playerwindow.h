@@ -75,6 +75,7 @@ private:
 	bool m_bClearWin;
 
 
+	HDC hdc;
 	HDC hCompatibleDC;
 	HBITMAP hCustomBmp;
 

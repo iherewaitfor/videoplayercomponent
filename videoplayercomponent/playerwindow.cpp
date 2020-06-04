@@ -123,8 +123,11 @@ void PlayerWindow::releaseWinRenderResources()
 
 void PlayerWindow::render(HWND hwnd, uint8_t * data, int WIDTH, int HEIGHT, bool rotate)
 {
-	HDC hdc;
-	hdc = GetDC(hwnd);
+
+	if(NULL == hdc)
+	{
+		hdc = GetDC(hwnd);
+	}
 	if( hCompatibleDC == NULL)
 	{
 		hCompatibleDC = CreateCompatibleDC(NULL);
@@ -149,8 +152,6 @@ void PlayerWindow::render(HWND hwnd, uint8_t * data, int WIDTH, int HEIGHT, bool
 	POINT	pSrc = { 0, 0 };
 	SIZE	sizeWnd = { WIDTH, HEIGHT };
 	UpdateLayeredWindow(hwnd, hdc, NULL, &sizeWnd, hCompatibleDC, &pSrc, NULL, &blend, ULW_ALPHA);//更新分层窗口
-
-	ReleaseDC(hwnd, hdc);
 }
 
 int getFrameIntervalms(int num, int den)
@@ -467,6 +468,7 @@ PlayerWindow::PlayerWindow():m_bReadFramesFinished(false),m_playing(false)
 ,m_bTransparent(true)
 {
 
+	hdc = NULL;
 	hCompatibleDC = NULL;
 	hCustomBmp = NULL;
 	TheFirstPoint.x = 0;
@@ -547,6 +549,11 @@ LRESULT PlayerWindow::MyProc(HWND hwnd,UINT msg,WPARAM wParam,LPARAM lParam)
 PlayerWindow::~PlayerWindow()
 {
 	stop();
+	if(hdc)
+	{
+		ReleaseDC(m_hwnd, hdc);
+		hdc = NULL;
+	}
 	releaseWinRenderResources();
 	if(m_hwnd)
 	{
