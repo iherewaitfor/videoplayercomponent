@@ -116,6 +116,7 @@ class IPlayerWindowEventHandlerImpl: public IPlayerWindowEventHandler
 		/*fn_getVideoPlayerComponentHelperPtr()->unregPlayerWindowEvent(1,1,this);*/
 		if(playwindow && playwindow->getPlayerWindowID() == playerWindowID && msgid == VideoPlayerWindowComponent::PLAYERWINDOW_EVENTID_STOP && playCount-- > 0)
 		{
+			playwindow->setPlayPosition(200,300,912,720);
 			playwindow->play("./out.mp4");
 		}
 	}

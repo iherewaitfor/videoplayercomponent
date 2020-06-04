@@ -46,12 +46,12 @@ void transformRGB(uint8_t * in, uint8_t* out, int width, int height)
 void transformRGBhalf(uint8_t * in, uint8_t* out, int width, int height)
 { //Êä³öÒ»°ë
 	int rgbwidth = width/2;
-	for(int j = height; j > 0 ; j--)
+	for(int j = 0; j < height ; j++)
 	{
 		for(int i= 0;  i < rgbwidth; i++)
 		{
-			uint8_t * pRGB = out +((height- j) *rgbwidth  +i)*4;
-			uint8_t * pIn = in + ((j-1)*width + i)*4;
+			uint8_t * pRGB = out +(j *rgbwidth  +i)*4;
+			uint8_t * pIn = in + (j*width + i)*4;
 			*pRGB = *pIn; //
 			*(pRGB+1) = *(pIn+1); //
 			*(pRGB+2) = *(pIn+2); //
@@ -279,10 +279,9 @@ bool PlayerWindow::play(const string & filePath)
 			AV_PIX_FMT_YUV420P,pCodecCtx->width, pCodecCtx->height,1);
 
 		packet=(AVPacket *)FfmpegFunctions::getInstance()->av_mallocPtr(sizeof(AVPacket));
-		//Output Info-----------------------------
-		//printf("--------------- File Information ----------------\n");
+
 		FfmpegFunctions::getInstance()->av_dump_formatPtr(pFormatCtx,0,m_filepath.c_str(),0);
-		//printf("-------------------------------------------------\n");
+
 		img_convert_ctx = FfmpegFunctions::getInstance()->sws_getContextPtr(pCodecCtx->width, pCodecCtx->height, pCodecCtx->pix_fmt, 
 			pCodecCtx->width, pCodecCtx->height, AV_PIX_FMT_YUV420P, SWS_FAST_BILINEAR, NULL, NULL, NULL); 
 
@@ -374,17 +373,7 @@ int PlayerWindow::renderFrame()
 						//printf("(%d)", h);
 					}
 					transformRGBhalf(out, outRGBA,m_width * 2,m_height);
-					saveRGBAfiles(outRGBA,m_width,m_height);
-					render(hwnd, outRGBA, m_width,m_height,true);
-
-
-					//SetWindowPos(hwnd, NULL, 300, 200, pCodecCtx->width, pCodecCtx->height, SWP_SHOWWINDOW );
-					//saveRGBAfiles(out,pCodecCtx->width,pCodecCtx->height);
-					////transformRGBRotate(out, outRGBA,pCodecCtx->width,pCodecCtx->height);
-					////render(hwnd, outRGBA, pCodecCtx->width,pCodecCtx->height );
-					//render(hwnd, out, pCodecCtx->width,pCodecCtx->height );
-					//Sleep(45);
-
+					render(hwnd, outRGBA, m_width,m_height);
 
 					needbreak = true;
 
@@ -402,8 +391,6 @@ int PlayerWindow::renderFrame()
 			m_bReadFramesFinished = true;
 		}
 	}//if m_bReadFramesFinished;
-
-
 
 	if(m_bReadFramesFinished)
 	{
@@ -438,14 +425,7 @@ int PlayerWindow::renderFrame()
 					}
 
 					transformRGBhalf(out, outRGBA,m_width * 2,m_height);
-					saveRGBAfiles(outRGBA,m_width,m_height);
-					render(hwnd, outRGBA, m_width,m_height,true);
-
-
-				//saveRGBAfiles(out,pCodecCtx->width,pCodecCtx->height);
-				////transformRGBRotate(out, outRGBA,pCodecCtx->width,pCodecCtx->height);
-				////render(hwnd, outRGBA, pCodecCtx->width,pCodecCtx->height );
-				//render(hwnd, out, pCodecCtx->width,pCodecCtx->height );
+					render(hwnd, outRGBA, m_width,m_height);
 
 				isLastFrame = false;
 				break;
@@ -553,7 +533,7 @@ LRESULT PlayerWindow::MyProc(HWND hwnd,UINT msg,WPARAM wParam,LPARAM lParam)
 	//		SetWindowPos(hwnd, NULL, pt.x, pt.y, NULL, NULL, SWP_NOREDRAW |
 	//			SWP_NOSIZE | SWP_NOZORDER);
 	//	}
-		break;
+	//	break;
 	case WM_TIMER:
 		if(wParam == IDT_REDNER_TIMER)
 		{
