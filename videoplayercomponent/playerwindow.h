@@ -72,6 +72,7 @@ private:
 
 	bool m_bReadFramesFinished;
 	bool m_playing;
+	bool m_bFreeing;
 	bool m_bClearWin;
 
 

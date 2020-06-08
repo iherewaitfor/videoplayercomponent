@@ -106,6 +106,7 @@ typedef VideoPlayerComponentHelper * (*Fn_getVideoPlayerComponentHelperPtr)();
 Fn_getVideoPlayerComponentHelperPtr fn_getVideoPlayerComponentHelperPtr = NULL;
 
 PlayerWindowInterface * playwindow = NULL;
+PlayerWindowInterface * playwindow2 = NULL;
 
 
 int playCount = 2;
@@ -121,6 +122,7 @@ class IPlayerWindowEventHandlerImpl: public IPlayerWindowEventHandler
 		}
 	}
 };
+IPlayerWindowEventHandlerImpl * eventhandler = NULL;
 
 void loadVideoComponent()
 {
@@ -156,7 +158,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR szCmdLine
 	playwindow->setTransparent(false);
 
 
-	IPlayerWindowEventHandlerImpl * eventhandler = new IPlayerWindowEventHandlerImpl();
+	eventhandler = new IPlayerWindowEventHandlerImpl();
 	fn_getVideoPlayerComponentHelperPtr()->regPlayerWindowEvent(playwindow->getPlayerWindowID(),VideoPlayerWindowComponent::PLAYERWINDOW_EVENTID_STOP,eventhandler);
 	fn_getVideoPlayerComponentHelperPtr()->regPlayerWindowEvent(playwindow->getPlayerWindowID(),VideoPlayerWindowComponent::PLAYERWINDOW_EVENTID_CLICK,eventhandler);
 
@@ -191,7 +193,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR szCmdLine
 	UpdateWindow(hwnd);
 	
 
-	PlayerWindowInterface * playwindow2 = fn_getVideoPlayerComponentHelperPtr()->createPlayWindow();
+	playwindow2 = fn_getVideoPlayerComponentHelperPtr()->createPlayWindow();
 	playwindow2->init(hwnd,200,200,912,720);
 	playwindow2->play("./out.mp4");
 
@@ -222,16 +224,28 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 		SetTimer(hwnd, IDT_TIMER, 200, (TIMERPROC)TimerProc);
 		break;
 	case WM_RBUTTONDOWN:
-		if(playwindow)
 		{
-			playwindow->stop();
-			fn_getVideoPlayerComponentHelperPtr()->freePlayWindow(playwindow);
-			playwindow = NULL;
+			if(playwindow2)
+			{
+				playwindow2->stop();
+				fn_getVideoPlayerComponentHelperPtr()->freePlayWindow(playwindow2);
+				playwindow2 = NULL;
+			}
 
-			//–∂‘ÿ≤‚ ‘
-			unloaVideoComponent();
+			if(playwindow)
+			{
+				//fn_getVideoPlayerComponentHelperPtr()->unregPlayerWindowEvent(playwindow->getPlayerWindowID(),VideoPlayerWindowComponent::PLAYERWINDOW_EVENTID_STOP,eventhandler);
+				//fn_getVideoPlayerComponentHelperPtr()->unregPlayerWindowEvent(playwindow->getPlayerWindowID(),VideoPlayerWindowComponent::PLAYERWINDOW_EVENTID_CLICK,eventhandler);
+				playwindow->stop();
+				fn_getVideoPlayerComponentHelperPtr()->freePlayWindow(playwindow);
+				playwindow = NULL;
+
+				//–∂‘ÿ≤‚ ‘
+				//unloaVideoComponent();
+			}
+			return 1;
+
 		}
-		return 1;
 		break;
 	case WM_LBUTTONDOWN:
 		ldown = TRUE;

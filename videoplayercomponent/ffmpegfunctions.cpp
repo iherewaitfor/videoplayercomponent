@@ -12,6 +12,7 @@ FfmpegFunctions::FfmpegFunctions(wstring filePath)
 
 	av_register_allPtr = NULL;
 	avformat_network_initPtr = NULL;
+	avformat_network_deinitPtr = NULL;
 	avformat_alloc_contextPtr = NULL;
 	avformat_open_inputPtr = NULL;
 	avformat_find_stream_infoPtr = NULL;
@@ -76,6 +77,7 @@ bool FfmpegFunctions::initFns()
 
 	avformat_network_initPtr = (Avformat_network_initPtr)GetProcAddress(h_avformat, "avformat_network_init");
 
+	avformat_network_deinitPtr = (Avformat_network_deinitPtr)GetProcAddress(h_avformat, "avformat_network_deinit"); 
 
 	avformat_alloc_contextPtr = (Avformat_alloc_contextPtr)GetProcAddress(h_avformat, "avformat_alloc_context");
 

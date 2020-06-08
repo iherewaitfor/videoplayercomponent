@@ -320,8 +320,8 @@ void PlayerWindow::stop()
 	m_bClearWin = false;
 	m_bLoop = false;
 	releaseFFmpegResources();
-	if(isPlaying)
-	{
+	if(isPlaying & !m_bFreeing)
+	{ //构建时，就不回调stop了，以避免业务收到stop信号后又调 play
 		map<string,string> extend;
 		if(PlayWindowHelperImple::getInstance())
 		{
@@ -466,6 +466,7 @@ PlayerWindow::PlayerWindow():m_bReadFramesFinished(false),m_playing(false)
 ,m_hwnd(NULL)
 ,playWindowId(idseed++)
 ,m_bTransparent(true)
+,m_bFreeing(false)
 {
 
 	hdc = NULL;
@@ -548,6 +549,7 @@ LRESULT PlayerWindow::MyProc(HWND hwnd,UINT msg,WPARAM wParam,LPARAM lParam)
 
 PlayerWindow::~PlayerWindow()
 {
+	m_bFreeing = true;
 	stop();
 	if(hdc)
 	{
@@ -577,8 +579,6 @@ void PlayerWindow::releaseFFmpegResources()
 
 	if(packet)
 	{
-		FfmpegFunctions::getInstance()->av_packet_unrefPtr(packet);
-		FfmpegFunctions::getInstance()->av_free_packetPtr(packet);
 		FfmpegFunctions::getInstance()->av_freePtr(packet);
 		packet = NULL;
 	}

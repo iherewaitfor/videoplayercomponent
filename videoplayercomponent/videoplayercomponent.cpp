@@ -46,6 +46,10 @@ VIDEOPLAYERCOMPONENT_API bool fn_onLoadVideoplayercomponent(LPCWSTR filePath)
 extern "C" VIDEOPLAYERCOMPONENT_API void fn_unLoadVideoplayercomponent()
 {
 	//ÇåÀídll
+	if(FfmpegFunctions::getInstance()->avformat_network_deinitPtr)
+	{
+		FfmpegFunctions::getInstance()->avformat_network_deinitPtr();
+	}
 	FfmpegFunctions::desctroyInstance();
 	PlayWindowHelperImple::desctroyInstance();
 	

@@ -22,6 +22,7 @@ using namespace std;
 
 typedef void (*Av_register_allPtr)();
 typedef void (*Avformat_network_initPtr)();
+typedef void (*Avformat_network_deinitPtr)();
 typedef AVFormatContext * (*Avformat_alloc_contextPtr)();
 typedef int (*Avformat_open_inputPtr)(AVFormatContext **, const char *, AVInputFormat *, AVDictionary **);
 typedef int (*Avformat_find_stream_infoPtr)(AVFormatContext *, AVDictionary **);
@@ -78,6 +79,7 @@ struct FfmpegFunctions
 
 	Av_register_allPtr av_register_allPtr;
 	Avformat_network_initPtr avformat_network_initPtr ;
+	Avformat_network_deinitPtr avformat_network_deinitPtr;
 	Avformat_alloc_contextPtr avformat_alloc_contextPtr;
 	Avformat_open_inputPtr avformat_open_inputPtr;
 	Avformat_find_stream_infoPtr avformat_find_stream_infoPtr;
