@@ -320,14 +320,6 @@ void PlayerWindow::stop()
 	m_bClearWin = false;
 	m_bLoop = false;
 	releaseFFmpegResources();
-	if(isPlaying & !m_bFreeing)
-	{ //构建时，就不回调stop了，以避免业务收到stop信号后又调 play
-		map<string,string> extend;
-		if(PlayWindowHelperImple::getInstance())
-		{
-			PlayWindowHelperImple::getInstance()->sendEvent(playWindowId,VideoPlayerWindowComponent::PLAYERWINDOW_EVENTID_STOP,"end", extend);
-		}
-	}
 }
 
 int PlayerWindow::renderFrame()
@@ -450,6 +442,12 @@ int PlayerWindow::renderFrame()
 			else
 			{
 				stop();
+				//只有正常播放结束才会发stop信号。其他情况不发。
+				map<string,string> extend;
+				if(PlayWindowHelperImple::getInstance())
+				{
+					PlayWindowHelperImple::getInstance()->sendEvent(playWindowId,VideoPlayerWindowComponent::PLAYERWINDOW_EVENTID_STOP,"end", extend);
+				}
 				
 			}
 		}
