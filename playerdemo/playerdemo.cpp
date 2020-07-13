@@ -154,7 +154,9 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR szCmdLine
 	loadVideoComponent();
 	playwindow = fn_getVideoPlayerComponentHelperPtr()->createPlayWindow();
 	playwindow->init(NULL,200,200,500,500);
-	playwindow->play("./allin.mp4");
+
+	playwindow->setVolume(0.5);
+	playwindow->play("./audiogift.mp4");
 	playwindow->setTransparent(false);
 
 
@@ -241,7 +243,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 				playwindow = NULL;
 
 				//Ð¶ÔØ²âÊÔ
-				//unloaVideoComponent();
+				unloaVideoComponent();
 			}
 			return 1;
 
@@ -271,7 +273,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 			else if(playIndex%3 == 1)
 			{
 				playwindow->setPlayPosition(200,300,500,500);
-				playwindow->play("./allin.mp4");
+				playwindow->play("./audiogift.mp4");
 			}
 			else
 			{

@@ -7,6 +7,7 @@ using namespace std;
 
 struct PlayerWindowInterface
 {
+	virtual ~PlayerWindowInterface(){};
 	virtual bool init(HWND parentHwnd, int x, int y, int w, int h) = 0;
 	virtual void setPlayPosition(int x, int y, int w, int h) = 0;
 	virtual void setVisible(bool isVisible) = 0;
@@ -15,7 +16,7 @@ struct PlayerWindowInterface
 	virtual int getPlayerWindowID() = 0; //返回PlayerWindow对象id,用于通信
 	virtual void setPlayerWindowID(int id) = 0;
 	virtual void setTransparent(bool isTransparent) = 0; //设置键鼠穿透。默认穿透。
-	virtual ~PlayerWindowInterface(){};
+	virtual void setVolume(double volume) = 0;  //设置音量，取值范围[0, 1.0]
 };
 
 namespace VideoPlayerWindowComponent{

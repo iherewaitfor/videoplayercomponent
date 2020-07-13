@@ -31,6 +31,7 @@ FfmpegFunctions::FfmpegFunctions(wstring filePath)
 	av_free_packetPtr = NULL;
 	avcodec_closePtr =NULL;
 	av_packet_unrefPtr = NULL;
+	avcodec_decode_audio4Ptr = NULL;
 
 
 	//LoadLibraryA("avutil-52.dll");
@@ -42,11 +43,22 @@ FfmpegFunctions::FfmpegFunctions(wstring filePath)
 	av_image_fill_arraysPtr = NULL;
 	av_frame_freePtr = NULL;
 
+	av_get_channel_layout_nb_channelsPtr = NULL;
+	av_samples_get_buffer_sizePtr = NULL;
+
 	//LoadLibraryA("swscale-2.dll");
 	//HMODULE h_swscale= GetModuleHandleA("swscale-2.dll");
 	sws_getContextPtr = NULL;
 	sws_scalePtr = NULL;
 	sws_freeContextPtr = NULL;
+
+	//LoadLibraryA("swresample-0.dll");
+	//HMODULE h_swresample= GetModuleHandleA("swresample-0.dll");
+	swr_allocPtr = NULL;
+	swr_alloc_set_optsPtr = NULL;
+	swr_initPtr = NULL;
+	swr_convertPtr = NULL;
+	swr_freePtr = NULL;
 }
 
 FfmpegFunctions * FfmpegFunctions::getInstance()
@@ -114,6 +126,10 @@ bool FfmpegFunctions::initFns()
 
 	av_packet_unrefPtr = (Av_packet_unrefPtr)GetProcAddress(h_aavcodec, "av_packet_unref"); 
 
+	avcodec_decode_audio4Ptr = (Avcodec_decode_audio4Ptr)GetProcAddress(h_aavcodec, "avcodec_decode_audio4"); 
+
+	
+
 	tempPath = m_filePath;
 	tempPath.append(L"avutil-52.dll");
 	HMODULE h_avutil= ::LoadLibrary(tempPath.c_str());
@@ -125,6 +141,20 @@ bool FfmpegFunctions::initFns()
 	av_mallocPtr = (Av_mallocPtr)GetProcAddress(h_avutil, "av_malloc");
 
 	av_freePtr = (Av_freePtr)GetProcAddress(h_avutil, "av_free");
+
+	av_get_channel_layout_nb_channelsPtr = (Av_get_channel_layout_nb_channelsPtr)GetProcAddress(h_avutil, "av_get_channel_layout_nb_channels");
+
+	av_samples_get_buffer_sizePtr = (Av_samples_get_buffer_sizePtr)GetProcAddress(h_avutil, "av_samples_get_buffer_size");
+
+	av_get_default_channel_layoutPtr = (Av_get_default_channel_layoutPtr)GetProcAddress(h_avutil, "av_get_default_channel_layout");
+
+	
+
+	
+
+	
+
+
 	
 
 
@@ -144,9 +174,30 @@ bool FfmpegFunctions::initFns()
 	sws_scalePtr = (Sws_scalePtr)GetProcAddress(h_swscale, "sws_scale");
 	sws_freeContextPtr = (Sws_freeContextPtr)GetProcAddress(h_swscale, "sws_freeContext");
 
+
+
+	tempPath = m_filePath;
+	tempPath.append(L"swresample-0.dll");
+	HMODULE h_swresample= ::LoadLibrary(tempPath.c_str());
+
+	swr_allocPtr = (Swr_allocPtr)GetProcAddress(h_swresample, "swr_alloc");
+
+	swr_alloc_set_optsPtr = (Swr_alloc_set_optsPtr)GetProcAddress(h_swresample, "swr_alloc_set_opts");
+
+	swr_initPtr = (Swr_initPtr)GetProcAddress(h_swresample, "swr_init");
+
+	swr_convertPtr = (Swr_convertPtr)GetProcAddress(h_swresample, "swr_convert");
+
+	swr_freePtr = (Swr_freePtr)GetProcAddress(h_swresample, "swr_free");
+	
+
+	
+	
+
+
 	SetCurrentDirectory(szCurDir);
 
-	if(!h_avutil || !h_swscale || !h_aavcodec || !h_avformat)
+	if(!h_avutil || !h_swscale || !h_aavcodec || !h_avformat || !h_swresample)
 	{
 		return false;
 	}
@@ -180,6 +231,12 @@ FfmpegFunctions::~FfmpegFunctions()
 	if(h_swscale)
 	{
 		FreeLibrary(h_swscale);
+	}
+
+	HMODULE h_swresample = ::GetModuleHandle (L"swresample-0.dll");
+	if(h_swresample)
+	{
+		FreeLibrary(h_swresample);
 	}
 
 	HMODULE h_avutil = ::GetModuleHandle (L"avutil-52.dll");

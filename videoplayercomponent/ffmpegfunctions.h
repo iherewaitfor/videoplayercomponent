@@ -42,6 +42,9 @@ typedef int (*Avcodec_decode_video2Ptr)(AVCodecContext *, AVFrame *, int *, cons
 typedef void (*Av_free_packetPtr)(AVPacket *);
 typedef int (*Avcodec_closePtr)(AVCodecContext *);
 typedef void (*Av_packet_unrefPtr)(AVPacket *);
+typedef int (*Avcodec_decode_audio4Ptr)(AVCodecContext *, AVFrame *,int *, const AVPacket *);
+
+ 
 
 //LoadLibraryA("avutil-52.dll");
 //HMODULE h_avutil= GetModuleHandleA("avutil-52.dll");
@@ -52,6 +55,13 @@ typedef void(*Av_freePtr)(void *);
 typedef int (*Av_image_get_buffer_sizePtr)(enum AVPixelFormat , int , int , int );
 typedef int (*Av_image_fill_arraysPtr)(uint8_t *[], int[],const uint8_t *,enum AVPixelFormat , int , int , int );
 typedef void (*Av_frame_freePtr)(AVFrame **);
+
+typedef int (*Av_get_channel_layout_nb_channelsPtr)(uint64_t );
+
+typedef int (*Av_samples_get_buffer_sizePtr)(int *, int , int ,enum AVSampleFormat , int );
+
+typedef int64_t (*Av_get_default_channel_layoutPtr)(int );
+
 
 
 //LoadLibraryA("swscale-2.dll");
@@ -68,6 +78,25 @@ typedef int(*Sws_scalePtr)(struct SwsContext *, const uint8_t *const [],
 
 typedef void(*Sws_freeContextPtr)(struct SwsContext *);
 
+
+
+
+//LoadLibraryA("swresample-0.dll");
+//HMODULE h_swresample= GetModuleHandleA("swresample-0.dll");
+
+typedef struct SwrContext *(*Swr_allocPtr)(void);
+
+typedef struct SwrContext *(*Swr_alloc_set_optsPtr)(struct SwrContext *,
+													int64_t , enum AVSampleFormat , int ,
+													int64_t  , enum AVSampleFormat , int  ,
+													int , void *);
+
+typedef int(*Swr_initPtr)(struct SwrContext *);
+
+typedef int(*Swr_convertPtr)(struct SwrContext *, uint8_t **, int ,
+							 const uint8_t ** , int );
+
+typedef void(*Swr_freePtr)(struct SwrContext **);
 
 
 
@@ -98,6 +127,7 @@ struct FfmpegFunctions
 	Av_free_packetPtr av_free_packetPtr;
 	Avcodec_closePtr avcodec_closePtr;
 	Av_packet_unrefPtr av_packet_unrefPtr;
+	Avcodec_decode_audio4Ptr avcodec_decode_audio4Ptr;
 
 
 	//LoadLibraryA("avutil-52.dll");
@@ -109,11 +139,25 @@ struct FfmpegFunctions
 	Av_image_fill_arraysPtr av_image_fill_arraysPtr;
 	Av_frame_freePtr av_frame_freePtr;
 
+	Av_get_channel_layout_nb_channelsPtr av_get_channel_layout_nb_channelsPtr;
+	Av_samples_get_buffer_sizePtr av_samples_get_buffer_sizePtr;
+	Av_get_default_channel_layoutPtr av_get_default_channel_layoutPtr;
+
 	//LoadLibraryA("swscale-2.dll");
 	//HMODULE h_swscale= GetModuleHandleA("swscale-2.dll");
 	Sws_getContextPtr sws_getContextPtr;
 	Sws_scalePtr sws_scalePtr;
 	Sws_freeContextPtr sws_freeContextPtr;
+
+	//LoadLibraryA("swresample-0.dll");
+	//HMODULE h_swresample= GetModuleHandleA("swresample-0.dll");
+	Swr_allocPtr swr_allocPtr;
+	Swr_alloc_set_optsPtr swr_alloc_set_optsPtr;
+	Swr_initPtr swr_initPtr;
+	Swr_convertPtr swr_convertPtr;
+	Swr_freePtr swr_freePtr;
+
+
 
 	FfmpegFunctions(wstring filePath);
 	~FfmpegFunctions();
