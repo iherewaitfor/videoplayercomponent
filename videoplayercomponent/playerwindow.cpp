@@ -953,7 +953,19 @@ bool PlayerWindow::playVideo()
 	m_playing = true;
 
 	//audio************************************start
-	startPlaySound();
+
+	bool needPlaySoud = false;
+	for(int i=0; i<pFormatCtx->nb_streams; i++) 
+	{
+		if(pFormatCtx->streams[i]->codec->codec_type==AVMEDIA_TYPE_AUDIO){
+			needPlaySoud = true;
+			break;
+		}
+	}
+	if(needPlaySoud)
+	{
+		startPlaySound();
+	}
 	//audio************************************end
 
 	return true;
