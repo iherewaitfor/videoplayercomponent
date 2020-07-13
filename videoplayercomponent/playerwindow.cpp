@@ -258,254 +258,15 @@ void PlayerWindow::setPlayPosition(int x, int y, int w, int h)
 
 bool PlayerWindow::play(const string & filePath)
 {
-	stop();
+	stop();//做上一次视频的清理工作。
 	m_filepath = filePath;
+
 	m_playingAudio = false; //让音频播放停止取数据播放
 
 	SetTimer(m_hwnd,             // handle to main window 
 		IDT_CHECK_AUDIO_TIMER,            // timer identifier 
 		10,                 // ms interval 
 		NULL);     // no timer callback 
-
-	////做上一次的清理工作。
-	//string errorStr;
-
-	//m_filepath = filePath;
-
-	//pFormatCtx = FfmpegFunctions::getInstance()->avformat_alloc_contextPtr();
-
-	//if(FfmpegFunctions::getInstance()->avformat_open_inputPtr(&pFormatCtx,m_filepath.c_str(),NULL,NULL)!=0){
-	//	errorStr.append("Couldn't open input stream.");
-	//	return false;
-	//}
-	//if(FfmpegFunctions::getInstance()->avformat_find_stream_infoPtr(pFormatCtx,NULL)<0){
-	//	errorStr.append("Couldn't find stream information..");
-	//	return false;
-	//}
-	//videoindex=-1;
-	//for(int i=0; i<pFormatCtx->nb_streams; i++) 
-	//{
-	//	if(pFormatCtx->streams[i]->codec->codec_type==AVMEDIA_TYPE_VIDEO){
-	//		videoindex=i;
-	//		break;
-	//	}
-	//}
-	//if(videoindex==-1){
-	//	errorStr.append("Didn't find a video stream.");
-	//	return false;
-	//}
-
-	//pCodecCtx=pFormatCtx->streams[videoindex]->codec; 
-	//pCodec= FfmpegFunctions::getInstance()->avcodec_find_decoderPtr(pCodecCtx->codec_id);
-	//if(pCodec==NULL){
-	//	errorStr.append("Codec not found.");
-	//	return false;
-	//}
-	//if(FfmpegFunctions::getInstance()->avcodec_open2Ptr(pCodecCtx, pCodec,NULL)<0){
-	//	errorStr.append("Could not open codec.");
-	//	return false;
-	//}
-
-	//pFrame=FfmpegFunctions::getInstance()->av_frame_allocPtr();
-	//pFrameYUV=FfmpegFunctions::getInstance()->av_frame_allocPtr();
-	//out_buffer=(unsigned char *)FfmpegFunctions::getInstance()->av_mallocPtr(FfmpegFunctions::getInstance()->av_image_get_buffer_sizePtr(AV_PIX_FMT_YUV420P,  pCodecCtx->width, pCodecCtx->height,1));
-	//FfmpegFunctions::getInstance()->av_image_fill_arraysPtr(pFrameYUV->data, pFrameYUV->linesize,out_buffer,
-	//	AV_PIX_FMT_YUV420P,pCodecCtx->width, pCodecCtx->height,1);
-
-	//packet=(AVPacket *)FfmpegFunctions::getInstance()->av_mallocPtr(sizeof(AVPacket));
-
-	//FfmpegFunctions::getInstance()->av_dump_formatPtr(pFormatCtx,0,m_filepath.c_str(),0);
-
-	//img_convert_ctx = FfmpegFunctions::getInstance()->sws_getContextPtr(pCodecCtx->width, pCodecCtx->height, pCodecCtx->pix_fmt, 
-	//	pCodecCtx->width, pCodecCtx->height, AV_PIX_FMT_YUV420P, SWS_FAST_BILINEAR, NULL, NULL, NULL); 
-
-
-	//m_pSwsContextYUV2BGRA = FfmpegFunctions::getInstance()->sws_getContextPtr(pCodecCtx->width, pCodecCtx->height, AV_PIX_FMT_YUV420P,
-	//	m_width * 2, m_height, AV_PIX_FMT_BGRA, SWS_FAST_BILINEAR,
-	//	NULL, NULL, NULL);
-	//int size = m_width * 2 * m_height * 4 ;
-	//out = new uint8_t[size];
-	//memset(out,0,size); //初始化位图
-	//outRGBA = new uint8_t[size];
-	//memset(outRGBA,0,size); //初始化位图
-
-
-
-
-
-
-
-	////pFormatCtx->streams[videoindex]->r_frame_rate，帧率
-	//int intervalms = getFrameIntervalms(pFormatCtx->streams[videoindex]->r_frame_rate.num, pFormatCtx->streams[videoindex]->r_frame_rate.den);
-	//SetTimer(m_hwnd,             // handle to main window 
-	//	IDT_REDNER_TIMER,            // timer identifier 
-	//	intervalms,                 // ms interval 
-	//	NULL);     // no timer callback 
-
-
-	//m_playing = true;
-
-	////audio************************************start
-	//startPlaySound();
-
-//	pAudioFormatCtx = FfmpegFunctions::getInstance()->avformat_alloc_contextPtr();
-//
-//	if(FfmpegFunctions::getInstance()->avformat_open_inputPtr(&pAudioFormatCtx,m_filepath.c_str(),NULL,NULL)!=0){
-//		errorStr.append("Couldn't open input stream.");
-//		return true;
-//	}
-//	if(FfmpegFunctions::getInstance()->avformat_find_stream_infoPtr(pAudioFormatCtx,NULL)<0){
-//		errorStr.append("Couldn't find stream information..");
-//		return true;
-//	}
-//
-//	audioStreamIndex = -1;
-//	for( int i=0; i < pAudioFormatCtx->nb_streams; i++)
-//	{
-//		if(pAudioFormatCtx->streams[i]->codec->codec_type==AVMEDIA_TYPE_AUDIO){
-//			audioStreamIndex=i;
-//			break;
-//		}
-//	}
-//	if(audioStreamIndex == -1){
-//		return true;
-//	}
-//	// Get a pointer to the codec context for the audio stream
-//	pAudioCodecCtx=pAudioFormatCtx->streams[audioStreamIndex]->codec;
-//
-//	// Find the decoder for the audio stream
-//	pAudioCodec=FfmpegFunctions::getInstance()->avcodec_find_decoderPtr(pAudioCodecCtx->codec_id);
-//	if(pAudioCodec==NULL){
-//		return true;
-//	}
-//	if(FfmpegFunctions::getInstance()->avcodec_open2Ptr(pAudioCodecCtx, pAudioCodec,NULL)<0){
-//		errorStr.append("Could not open codec.");
-//		return true;
-//	}
-//
-//	pAudiopacket=(AVPacket *)FfmpegFunctions::getInstance()->av_mallocPtr(sizeof(AVPacket));
-//	//FfmpegFunctions::getInstance()->avini(pAudiopacket);
-//
-//	//Out Audio Param
-//	uint64_t out_channel_layout=AV_CH_LAYOUT_STEREO;
-//	//nb_samples: AAC-1024 MP3-1152
-//	int out_nb_samples=pAudioCodecCtx->frame_size;
-//	AVSampleFormat out_sample_fmt=AV_SAMPLE_FMT_S16;
-//	//int out_sample_rate=44100;
-//	int out_sample_rate=44100;
-//	if(pAudioCodecCtx)
-//	{
-//		out_sample_rate = pAudioCodecCtx->sample_rate;
-//	}
-//	int out_channels=FfmpegFunctions::getInstance()->av_get_channel_layout_nb_channelsPtr(out_channel_layout);
-//
-//	//Out Buffer Size
-//	audio_out_buffer_size = FfmpegFunctions::getInstance()->av_samples_get_buffer_sizePtr(NULL,out_channels ,out_nb_samples,out_sample_fmt, 1);
-//
-//	audio_out_buffer=(uint8_t *)FfmpegFunctions::getInstance()->av_mallocPtr(MAX_AUDIO_FRAME_SIZE*2);
-//	pAudioFrame=FfmpegFunctions::getInstance()->av_frame_allocPtr();
-//
-//	//FIX:Some Codec's Context Information is missing
-//	in_channel_layout=FfmpegFunctions::getInstance()->av_get_default_channel_layoutPtr(pAudioCodecCtx->channels);
-//	//Swr
-//
-//	au_convert_ctx = FfmpegFunctions::getInstance()->swr_allocPtr();
-//	au_convert_ctx=FfmpegFunctions::getInstance()->swr_alloc_set_optsPtr(au_convert_ctx,out_channel_layout, out_sample_fmt, out_sample_rate,
-//		in_channel_layout,pAudioCodecCtx->sample_fmt , pAudioCodecCtx->sample_rate,0, NULL);
-//	FfmpegFunctions::getInstance()->swr_initPtr(au_convert_ctx);
-//
-//
-//	wfx.wFormatTag = WAVE_FORMAT_PCM;//设置波形声音的格式
-//	wfx.nChannels = pAudioCodecCtx->channels;//2;//设置音频文件的通道数量
-//	//wfx.nSamplesPerSec = 48000;//设置每个声道播放和记录时的样本频率,看具体文件，一般44100
-//	wfx.nSamplesPerSec = out_sample_rate;
-//	wfx.wBitsPerSample = pAudioCodecCtx->bits_per_coded_sample;// 16;
-//	wfx.nBlockAlign = (wfx.wBitsPerSample >> 3) * wfx.nChannels;
-//	wfx.nAvgBytesPerSec = wfx.nBlockAlign * wfx.nSamplesPerSec;
-//	wfx.cbSize = 0;//额外信息的大小
-//	//打开一个给定的波形音频输出装置来进行声音播放，方式为回调函数方式。如果是对话框程序，可以将第五个参数改为(DWORD)this，操作跟本Demo程序相似
-//	int ret =  waveOutOpen(&hwo, WAVE_MAPPER, &wfx, (DWORD)WaveCallback, (DWORD)this, CALLBACK_FUNCTION);
-//	if( ret != MMSYSERR_NOERROR)
-//	{
-//		return true;
-//	}
-//	//音量设置
-//	//https://docs.microsoft.com/zh-cn/windows/win32/api/mmeapi/nf-mmeapi-waveoutsetvolume?redirectedfrom=MSDN
-//	DWORD volume;
-//	DWORD MaxVolume = 0xFFFF;
-//	float v = 0.1;
-//	volume = v * MaxVolume;
-//	volume = (volume << 16) + volume;
-//	waveOutSetVolume(hwo,volume);
-//
-////	int got_audio = 0;
-////	int index= 0;
-////	while(FfmpegFunctions::getInstance()->av_read_framePtr(pAudioFormatCtx, pAudiopacket)>=0){
-////		if(pAudiopacket->stream_index==audioStreamIndex){
-////			int ret = FfmpegFunctions::getInstance()->avcodec_decode_audio4Ptr( pAudioCodecCtx, pAudioFrame,&got_audio, pAudiopacket);
-////			if ( ret < 0 ) {
-////				printf("Error in decoding audio frame.\n");
-////				return true;
-////			}
-////			if ( got_audio > 0 ){
-////
-////
-////				FfmpegFunctions::getInstance()->swr_convertPtr(au_convert_ctx,&audio_out_buffer, MAX_AUDIO_FRAME_SIZE,(const uint8_t **)pAudioFrame->data , pAudioFrame->nb_samples);
-////#if 1
-////				static bool isFirst = true;
-////				static int sample_rate = 0;
-////				static int64_t firstPts = 1;
-////				if(isFirst){
-////					firstPts = pAudioFrame->pkt_pts;
-////					sample_rate = pAudioFrame->sample_rate;
-////					isFirst = false;
-////				}
-////				int msTime = 0;
-////				if(sample_rate > 0)
-////				{
-////					msTime = 1.0 * (pAudioFrame->pkt_pts - firstPts)/pAudioFrame->sample_rate * 1000; //ms时间
-////				}
-////				printf("index:%5d\t pts:%lld\t packet size:%d    ms:%d\n",index,pAudiopacket->pts,pAudiopacket->size, msTime);
-////#endif
-////
-////
-////
-////				index++;
-////			}
-////
-////
-////		}
-////		FfmpegFunctions::getInstance()->av_free_packetPtr(pAudiopacket);
-////	}
-//
-//
-//	wh1.dwLoops = 0L;//播放区一
-//	wh1.lpData = new char[DATASIZE];
-//	wh1.dwFlags = 0L;
-//	playSound(this,&wh1);
-//
-//	wh2.dwLoops = 0L;//播放区二，基本同上
-//	wh2.lpData = new char[DATASIZE];
-//	wh2.dwFlags = 0L;
-//	playSound(this,&wh2);
-//
-//	wh3.dwLoops = 0L;//播放区三，基本同上
-//	wh3.lpData = new char[DATASIZE];
-//	wh3.dwFlags = 0L;
-//	playSound(this,&wh3);
-//
-//
-//	wh4.dwLoops = 0L;//播放区四，基本同上
-//	wh4.lpData = new char[DATASIZE];
-//	wh4.dwFlags = 0L;
-//	playSound(this,&wh4);
-//
-//
-
-
-
-	//audio************************************end
-
 	return true;
 }
 
@@ -1046,7 +807,7 @@ bool PlayerWindow::startPlaySound()
 
 void PlayerWindow::releaseFFmpegAudioResources()
 {
-	//线程问题如何同步。有可能停时。
+	//需注意与音频播放线程同步。需等音频播放线程停止工作，才能释放对应的音频播放资源。
 
 	//swr_free(&au_convert_ctx);
 	//av_free(out_buffer);
@@ -1066,25 +827,21 @@ void PlayerWindow::releaseFFmpegAudioResources()
 		{
 			delete []wh1.lpData;
 			wh1.lpData = NULL;
-
 		}
 		if(wh2.lpData)
 		{
 			delete []wh2.lpData;
 			wh2.lpData = NULL;
-
 		}
 		if(wh3.lpData)
 		{
 			delete []wh3.lpData;
 			wh3.lpData = NULL;
-
 		}
 		if(wh4.lpData)
 		{
-			delete []wh3.lpData;
-			wh3.lpData = NULL;
-
+			delete []wh4.lpData;
+			wh4.lpData = NULL;
 		}
 	}
 
@@ -1125,7 +882,6 @@ void PlayerWindow::releaseFFmpegAudioResources()
 
 bool PlayerWindow::playVideo()
 {
-	//做上一次的清理工作。
 	string errorStr;
 
 	pFormatCtx = FfmpegFunctions::getInstance()->avformat_alloc_contextPtr();
