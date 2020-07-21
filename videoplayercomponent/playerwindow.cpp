@@ -263,6 +263,7 @@ bool PlayerWindow::play(const string & filePath)
 
 	m_playingAudio = false; //让音频播放停止取数据播放
 
+	KillTimer(m_hwnd, IDT_CHECK_AUDIO_TIMER);
 	SetTimer(m_hwnd,             // handle to main window 
 		IDT_CHECK_AUDIO_TIMER,            // timer identifier 
 		10,                 // ms interval 
@@ -300,6 +301,8 @@ int PlayerWindow::renderFrame()
 				int ret = FfmpegFunctions::getInstance()->avcodec_decode_video2Ptr(pCodecCtx, pFrame, &got_picture, packet);
 				if(ret < 0){
 					//printf("Decode Error.\n");
+					FfmpegFunctions::getInstance()->av_packet_unrefPtr(packet);
+					FfmpegFunctions::getInstance()->av_free_packetPtr(packet);
 					return -1;
 				}
 				if(got_picture){
@@ -676,23 +679,29 @@ void PlayerWindow::playSound(PlayerWindow *pPlayerWindow,LPWAVEHDR pWaveHeader)
 			int ret = FfmpegFunctions::getInstance()->avcodec_decode_audio4Ptr( pPlayerWindow->pAudioCodecCtx,pPlayerWindow->pAudioFrame,&got_audio, pPlayerWindow->pAudiopacket);
 			if ( ret < 0 ) {
 				printf("Error in decoding audio frame.\n");
-
+				FfmpegFunctions::getInstance()->av_packet_unrefPtr(pPlayerWindow->pAudiopacket);
+				FfmpegFunctions::getInstance()->av_free_packetPtr(pPlayerWindow->pAudiopacket);
 				return;
 			}
 			if ( got_audio > 0 ){
-
 
 				FfmpegFunctions::getInstance()->swr_convertPtr(pPlayerWindow->au_convert_ctx,&pPlayerWindow->audio_out_buffer, MAX_AUDIO_FRAME_SIZE,(const uint8_t **)pPlayerWindow->pAudioFrame->data , pPlayerWindow->pAudioFrame->nb_samples);
 				pWaveHeader->dwBufferLength = pPlayerWindow->audio_out_buffer_size;
 				memcpy_s(pWaveHeader->lpData,DATASIZE,pPlayerWindow->audio_out_buffer, pPlayerWindow->audio_out_buffer_size);
 				waveOutPrepareHeader(pPlayerWindow->getHwo(), pWaveHeader, sizeof(WAVEHDR));
 				waveOutWrite(pPlayerWindow->getHwo(), pWaveHeader, sizeof(WAVEHDR));
+
 				InterlockedExchangeAdd(&pPlayerWindow->m_playingWAVEHDRCount, 1);
+				FfmpegFunctions::getInstance()->av_packet_unrefPtr(pPlayerWindow->pAudiopacket);
+				FfmpegFunctions::getInstance()->av_free_packetPtr(pPlayerWindow->pAudiopacket);
 				break;
 			}
 		}
+		FfmpegFunctions::getInstance()->av_packet_unrefPtr(pPlayerWindow->pAudiopacket);
 		FfmpegFunctions::getInstance()->av_free_packetPtr(pPlayerWindow->pAudiopacket);
 	}
+	FfmpegFunctions::getInstance()->av_packet_unrefPtr(pPlayerWindow->pAudiopacket);
+	FfmpegFunctions::getInstance()->av_free_packetPtr(pPlayerWindow->pAudiopacket);
 }
 
 bool PlayerWindow::startPlaySound()
@@ -803,6 +812,7 @@ bool PlayerWindow::startPlaySound()
 	wh4.lpData = new char[DATASIZE];
 	wh4.dwFlags = 0L;
 	playSound(this,&wh4);
+	return true;
 }
 
 void PlayerWindow::releaseFFmpegAudioResources()
