@@ -678,7 +678,7 @@ void RaiseVolume(char* buf, int size, UINT32 uRepeat, double vol)//buf为需要调节
 	{
 		return;
 	}
-	for (int i = 0; i < size; i += 2)
+	for (int i = 0; i < size - 1; i += 2)
 	{
 		short wData;
 		wData = MAKEWORD(buf[i], buf[i + 1]);
