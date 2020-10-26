@@ -671,6 +671,36 @@ void PlayerWindow::setTransparent(bool isTransparent)
 	}
 }
 
+
+void RaiseVolume(char* buf, int size, UINT32 uRepeat, double vol)//buf为需要调节音量的音频数据块首地址指针，size为长度，uRepeat为重复次数，通常设为1，vol为增益倍数,可以小于1
+{
+	if (size <= 0)
+	{
+		return;
+	}
+	for (int i = 0; i < size; i += 2)
+	{
+		short wData;
+		wData = MAKEWORD(buf[i], buf[i + 1]);
+		long dwData = wData;
+		for (int j = 0; j < uRepeat; j++)
+		{
+			dwData = dwData * vol;
+			if (dwData < -0x8000)
+			{
+				dwData = -0x8000;
+			}
+			else if (dwData > 0x7FFF)
+			{
+				dwData = 0x7FFF;
+			}
+		}
+		wData = LOWORD(dwData);
+		buf[i] = LOBYTE(wData);
+		buf[i + 1] = HIBYTE(wData);
+	}
+}
+
 void PlayerWindow::playSound(PlayerWindow *pPlayerWindow,LPWAVEHDR pWaveHeader)
 {
 	int got_audio = 0;
@@ -688,6 +718,11 @@ void PlayerWindow::playSound(PlayerWindow *pPlayerWindow,LPWAVEHDR pWaveHeader)
 				FfmpegFunctions::getInstance()->swr_convertPtr(pPlayerWindow->au_convert_ctx,&pPlayerWindow->audio_out_buffer, MAX_AUDIO_FRAME_SIZE,(const uint8_t **)pPlayerWindow->pAudioFrame->data , pPlayerWindow->pAudioFrame->nb_samples);
 				pWaveHeader->dwBufferLength = pPlayerWindow->audio_out_buffer_size;
 				memcpy_s(pWaveHeader->lpData,DATASIZE,pPlayerWindow->audio_out_buffer, pPlayerWindow->audio_out_buffer_size);
+
+				//调整音量大小
+				int bufsize = pPlayerWindow->audio_out_buffer_size < DATASIZE ? pPlayerWindow->audio_out_buffer_size: DATASIZE;
+				RaiseVolume(pWaveHeader->lpData,bufsize, 1, m_volume);
+
 				waveOutPrepareHeader(pPlayerWindow->getHwo(), pWaveHeader, sizeof(WAVEHDR));
 				waveOutWrite(pPlayerWindow->getHwo(), pWaveHeader, sizeof(WAVEHDR));
 
@@ -972,6 +1007,10 @@ bool PlayerWindow::playVideo()
 			break;
 		}
 	}
+	if(m_volume < 0.0001)
+	{
+		needPlaySoud = false;
+	}
 	if(needPlaySoud)
 	{
 		startPlaySound();
@@ -984,13 +1023,15 @@ bool PlayerWindow::playVideo()
 void PlayerWindow::setVolume(double volume)
 {
 	m_volume = volume;
+	//to to: delete,后期可删掉以下设置
 	if(hwo)
 	{
 		//音量设置
 		//https://docs.microsoft.com/zh-cn/windows/win32/api/mmeapi/nf-mmeapi-waveoutsetvolume?redirectedfrom=MSDN
 		DWORD tVolume;
 		DWORD MaxVolume = 0xFFFF;
-		double v = m_volume;
+		//double v = m_volume;
+		double v = 1.0; // 用于恢复所在程序的音量为100%，可通用AppAudioConfig.exe查看。
 		v = (v < 1.0 && v>= 0)? v : 1.0;
 		tVolume = v * MaxVolume;
 		tVolume = (tVolume << 16) + tVolume;
