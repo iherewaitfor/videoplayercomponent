@@ -82,11 +82,39 @@ void transformRGBhalf(uint8_t * in, uint8_t* out, int width, int height)
 	}
 }
 
+void transformRGBhalfRotate(uint8_t * in, uint8_t* out, int width, int height)
+{ //输出一半,并旋转180度
+	int rgbwidth = width/2;
+	for(int j = height; j > 0 ; j--)
+	{
+		for(int i= 0;  i < rgbwidth; i++)
+		{
+			uint8_t * pRGB = out +((height- j) * rgbwidth +i)*4;
+			uint8_t * pIn = in + ((j-1)*width + i)*4;
+			*pRGB = *pIn; //
+			*(pRGB+1) = *(pIn+1); //
+			*(pRGB+2) = *(pIn+2); //
+			*(pRGB+3) = *(pIn + rgbwidth *4); //A	
+		}
+	}
+}
+
+bool   CheckFolderExist( const   wstring   & strPath)
+{
+	WIN32_FIND_DATA  wfd;
+	bool  rValue  =   false ;
+	HANDLE hFind  =  FindFirstFile(strPath.c_str(),  & wfd);
+	if  ((hFind  !=  INVALID_HANDLE_VALUE)  &&  (wfd.dwFileAttributes  &  FILE_ATTRIBUTE_DIRECTORY))
+	{
+		rValue  =   true ;   
+	}
+	FindClose(hFind);
+	return  rValue;
+}
 
 void saveRGBAfiles(uint8_t* rgbadata, int width, int height)
 {
-	return;
-	static int filecout = 0;
+	static int filecout = 1;
 
 	int depth = 4;
 	BITMAPFILEHEADER fileHeader;
@@ -109,10 +137,32 @@ void saveRGBAfiles(uint8_t* rgbadata, int width, int height)
 	infoHeader.biXPelsPerMeter = 3779;
 	infoHeader.biYPelsPerMeter = 3779;
 
+
+	std::wstring dir;
+	dir.resize(MAX_PATH);
+	::GetModuleFileNameW(NULL, &dir[0], MAX_PATH);
+	dir.resize(dir.rfind('\\'));
+	dir.append(L"/rgbs/");
+
+	if (filecout == 1 && !CheckFolderExist(dir))
+	{
+		::CreateDirectory(dir.c_str(), NULL);
+
+	}
 	FILE * fp = NULL;
-	char filename[200]={0};
-	sprintf(filename, "./rgbs/rgb%d.bmp", filecout++);
-	fp = fopen(filename, ("wb"));
+	wchar_t filename[200]={0};
+	if(filecout < 10){
+		swprintf(filename, L"rgb00%d.bmp", filecout++);
+	}
+	else if(filecout < 100){
+		swprintf(filename, L"rgb0%d.bmp", filecout++);
+	}
+	else
+	{
+		swprintf(filename, L"rgb%d.bmp", filecout++);
+	}
+	dir.append(filename);
+	fp = _wfopen(dir.c_str(), (L"wb"));
 	size_t writeCount = fwrite(&fileHeader, sizeof(BITMAPFILEHEADER), 1, fp);
 	writeCount = fwrite(&infoHeader, sizeof(BITMAPINFOHEADER), 1, fp);
 
@@ -331,6 +381,8 @@ int PlayerWindow::renderFrame()
 						//printf("(%d)", h);
 					}
 					transformRGBhalf(out, outRGBA,m_width * 2,m_height);
+					//transformRGBhalfRotate(out, outRGBA,m_width * 2,m_height);
+					//saveRGBAfiles(outRGBA, m_width, m_height);
 					render(hwnd, outRGBA, m_width,m_height);
 
 					needbreak = true;
@@ -383,6 +435,8 @@ int PlayerWindow::renderFrame()
 					}
 
 					transformRGBhalf(out, outRGBA,m_width * 2,m_height);
+					//transformRGBhalfRotate(out, outRGBA,m_width * 2,m_height); 
+					//saveRGBAfiles(outRGBA, m_width, m_height);
 					render(hwnd, outRGBA, m_width,m_height);
 
 				isLastFrame = false;
