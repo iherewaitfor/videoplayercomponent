@@ -20,13 +20,13 @@ using namespace std;
 #define HEIGHT 200
 
 int c= 0;
-char * data = NULL;
+char * rgbdata = NULL;
 HDC hCompatibleDC = NULL;
 HBITMAP hCustomBmp = NULL;
 
 void releaseResources()
 {
-	if(data != NULL)delete[] data;
+	if(rgbdata != NULL)delete[] rgbdata;
 	if(hCompatibleDC != NULL)DeleteObject(hCompatibleDC);
 	if(hCustomBmp != NULL )DeleteObject(hCustomBmp);
 }
@@ -50,11 +50,11 @@ void render(HWND hwnd)
 	bmpInfo.bmiHeader.biCompression = BI_RGB;
 	bmpInfo.bmiHeader.biBitCount = 32;
 
-	if(data == NULL)
+	if(rgbdata == NULL)
 	{
-		data = new char[WIDTH * HEIGHT * 4 + 1];
+		rgbdata = new char[WIDTH * HEIGHT * 4 + 1];
 	}
-	memset(data,0,WIDTH*HEIGHT*4); //初始化位图
+	memset(rgbdata,0,WIDTH*HEIGHT*4); //初始化位图
 	for(int i = 0 ; i < HEIGHT; i++)
 	{
 		c = (c+2) % 255;
@@ -64,7 +64,7 @@ void render(HWND hwnd)
 			{
 				continue;// 全透
 			}
-			char * pdata = data + (i*WIDTH+j)*4;
+			char * pdata = rgbdata + (i*WIDTH+j)*4;
 			*pdata = 0;   //Blue
 			*(pdata+1)= c; //Ggeen
 			*(pdata+2)= 0; //Red
@@ -75,7 +75,7 @@ void render(HWND hwnd)
 			}
 		}
 	}
-	SetDIBits(hdc, hCustomBmp, 0, HEIGHT, data, &bmpInfo, DIB_RGB_COLORS); //使用指定的DIB颜色数据来设置位图中的像素
+	SetDIBits(hdc, hCustomBmp, 0, HEIGHT, rgbdata, &bmpInfo, DIB_RGB_COLORS); //使用指定的DIB颜色数据来设置位图中的像素
 
 	BLENDFUNCTION blend = { 0 };
 	blend.BlendOp = AC_SRC_OVER;
